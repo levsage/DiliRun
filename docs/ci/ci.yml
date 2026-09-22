@@ -1,0 +1,86 @@
+name: CI
+
+on:
+  push:
+    branches: [main, beta]
+  pull_request:
+    branches: [main, beta]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Typecheck · lint · test · build
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Format check
+        run: npm run format:check
+
+      - name: Tests
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: Report bundle size
+        run: |
+          find dist -type f \( -name '*.js' -o -name '*.css' \) -printf '%s %p\n' | sort -n | tail -8
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dilirun-dist
+          path: dist
+          if-no-files-found: error
+          retention-days: 7
+
+  assets:
+    name: Asset pipeline reproduces the committed art
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install pipeline deps
+        run: python -m pip install -r tools/asset-pipeline/requirements.txt
+
+      - name: Rebuild art (runs the rig QA gates; fails if the rig drifts from the source art)
+        run: python tools/asset-pipeline/build.py --debug
+
+      - name: Warn if committed JSON changed (artefacts are regenerated, not asserted byte-identical)
+        run: |
+          git add -A public
+          if git diff --cached --quiet -- '*.json'; then
+            echo "manifest JSON is up to date"
+          else
+            echo "::warning::committed asset manifests differ from a fresh pipeline run"
+            git diff --cached --stat
+          fi
