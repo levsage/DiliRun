@@ -1,0 +1,5 @@
+# Asset pipeline only — the shipped game has zero runtime dependencies.
+# Python >= 3.10
+numpy>=1.26
+opencv-python-headless>=4.9
+Pillow>=10.2

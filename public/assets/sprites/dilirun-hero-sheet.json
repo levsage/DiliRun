@@ -1,0 +1,110 @@
+{
+  "format": "dilirun-spritesheet-v1",
+  "image": "dilirun-hero-sheet.webp",
+  "imagePath": "sprites/dilirun-hero-sheet.webp",
+  "cell": 384,
+  "columns": 8,
+  "rows": 7,
+  "frameCount": 55,
+  "anchor": {
+    "x": 0.5,
+    "y": 0.955
+  },
+  "anchorNote": "fraction of the cell where the hero's ground contact sits",
+  "states": {
+    "idle": {
+      "from": 0,
+      "count": 6,
+      "fps": 8,
+      "loop": true,
+      "hold": 0
+    },
+    "run": {
+      "from": 6,
+      "count": 8,
+      "fps": 17,
+      "loop": true
+    },
+    "dash": {
+      "from": 14,
+      "count": 3,
+      "fps": 14,
+      "loop": true,
+      "hold": 1
+    },
+    "jump": {
+      "from": 17,
+      "count": 5,
+      "fps": 15,
+      "loop": false,
+      "hold": 3
+    },
+    "fall": {
+      "from": 22,
+      "count": 3,
+      "fps": 10,
+      "loop": true,
+      "hold": 0
+    },
+    "land": {
+      "from": 25,
+      "count": 4,
+      "fps": 16,
+      "loop": false,
+      "hold": 3
+    },
+    "slide": {
+      "from": 29,
+      "count": 4,
+      "fps": 18,
+      "loop": false,
+      "hold": 2
+    },
+    "roll": {
+      "from": 33,
+      "count": 8,
+      "fps": 24,
+      "loop": false
+    },
+    "stumble": {
+      "from": 41,
+      "count": 6,
+      "fps": 16,
+      "loop": false
+    },
+    "victory": {
+      "from": 47,
+      "count": 8,
+      "fps": 13,
+      "loop": true
+    }
+  },
+  "aliases": {
+    "start": {
+      "state": "jump",
+      "frame": 0.0
+    },
+    "hurt": {
+      "state": "stumble",
+      "frame": 0.0
+    },
+    "coin": {
+      "state": "victory",
+      "frame": 2.0
+    },
+    "menu": {
+      "state": "idle",
+      "frame": 0.0
+    }
+  },
+  "formats": {
+    "webp": {
+      "path": "dilirun-hero-sheet.webp",
+      "bytes": 1372104
+    },
+    "png": {
+      "path": "dilirun-hero-sheet.png",
+      "bytes": 5039800
+    }
+  }
+}

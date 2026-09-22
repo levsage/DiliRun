@@ -1,0 +1,65 @@
+{
+  "comment": "Rig definition for the DiliRun hero. Coordinates are normalised (0..1) against the source illustration, so the rig is resolution independent. Rects deliberately overlap at the joints: a limb carries a little of its neighbour's pixels past the hinge so rotating it never exposes the background. analysis_width pins the resolution the stroke detector is tuned for.",
+  "analysis_height": 1600,
+  "ground_point": [0.4963, 0.9242],
+  "character_box": [0.0361, 0.0474, 0.9633, 0.9242],
+  "parts": [
+    {
+      "name": "cape_left",
+      "rect": [0.0, 0.38, 0.375, 0.805],
+      "pivot": [0.3948, 0.3828],
+      "z": 0,
+      "joints": [[0.3948, 0.39, 7]]
+    },
+    {
+      "name": "cape_right",
+      "rect": [0.62, 0.38, 1.0, 0.805],
+      "pivot": [0.6052, 0.3828],
+      "z": 1,
+      "joints": [[0.6052, 0.39, 7]]
+    },
+    {
+      "name": "leg_left",
+      "rect": [0.2764, 0.565, 0.4918, 0.962],
+      "pivot": [0.3948, 0.6155],
+      "z": 2,
+      "joints": [[0.3948, 0.625, 10]]
+    },
+    {
+      "name": "leg_right",
+      "rect": [0.4918, 0.565, 0.7332, 0.962],
+      "pivot": [0.5837, 0.6155],
+      "z": 3,
+      "joints": [[0.5837, 0.625, 10]]
+    },
+    {
+      "name": "torso",
+      "rect": [0.3074, 0.313, 0.6853, 0.685],
+      "pivot": [0.4963, 0.6345],
+      "z": 4,
+      "joints": []
+    },
+    {
+      "name": "arm_left",
+      "rect": [0.0, 0.2919, 0.4061, 0.43],
+      "pivot": [0.3722, 0.3532],
+      "z": 5,
+      "joints": [[0.3722, 0.356, 9]]
+    },
+    {
+      "name": "arm_right",
+      "rect": [0.5939, 0.2919, 1.0, 0.43],
+      "pivot": [0.6277, 0.3532],
+      "z": 6,
+      "joints": [[0.6277, 0.356, 9]]
+    },
+    {
+      "name": "head",
+      "rect": [0.281, 0.03, 0.71, 0.3435],
+      "pivot": [0.4952, 0.3384],
+      "z": 7,
+      "joints": [[0.4952, 0.333, 11]],
+      "note": "x range trimmed to the helmet so the raised gloves stay with the arms"
+    }
+  ]
+}
