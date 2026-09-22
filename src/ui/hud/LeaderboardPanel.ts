@@ -18,13 +18,17 @@ export function toRows(list: RunRecord[], highlightId?: string | null): Leaderbo
   }));
 }
 
+/**
+ * Relative time, floored: "1m ago" must mean *at least* a minute has passed. Rounding here
+ * used to make a 30-second-old run read as "1m ago", which is the one case a player checks.
+ */
 export function formatWhen(at: number, now = Date.now()): string {
-  const mins = Math.max(0, Math.round((now - at) / 60000));
+  const mins = Math.max(0, Math.floor((now - at) / 60000));
   if (mins < 1) return "just now";
   if (mins < 60) return `${mins}m ago`;
-  const hours = Math.round(mins / 60);
+  const hours = Math.floor(mins / 60);
   if (hours < 24) return `${hours}h ago`;
-  return `${Math.round(hours / 24)}d ago`;
+  return `${Math.floor(hours / 24)}d ago`;
 }
 
 export class LeaderboardPanel {
