@@ -1,0 +1,50 @@
+name: Bug report
+description: Something is wrong — gameplay, HUD, records, rendering.
+title: "bug: "
+labels: [bug, triage]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Runners are all about frame timing and edge cases, so the more exact the report,
+        the faster the fix. `?lab=1` (pose bench) and the browser console help a lot.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: Actual vs expected, in plain words.
+      placeholder: |
+        Actual: sliding into a low beam ends the run.
+        Expected: the hero passes under it (hitbox should be 0.42 tall while sliding).
+    validations: { required: true }
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      value: |
+        1.
+        2.
+        3.
+      description: Include the seed if you have one (`window.DILI` in the console).
+    validations: { required: true }
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Where
+      options: [gameplay, HUD (score/coins/leaderboard), rendering, audio, build/tooling, asset pipeline]
+    validations: { required: true }
+  - type: textarea
+    id: env
+    attributes:
+      label: Environment
+      value: |
+        - Device:
+        - OS / browser:
+        - Branch / commit:
+        - `?lab=1` shows the same problem: yes/no
+  - type: textarea
+    id: logs
+    attributes:
+      label: Console output
+      render: shell
+      placeholder: any errors or warnings

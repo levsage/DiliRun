@@ -1,0 +1,7 @@
+dist
+node_modules
+public/assets
+public/icons
+tools/asset-pipeline/out
+package-lock.json
+CHANGELOG.md

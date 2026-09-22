@@ -1,0 +1,41 @@
+name: Feature request
+description: A mechanic, screen, polish item or system for DiliRun.
+title: "feat: "
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Check `docs/ROADMAP.md` first — a lot of ideas are already parked under
+        "post-1.0 candidates", and pointing at the right milestone saves a round trip.
+  - type: textarea
+    id: player
+    attributes:
+      label: What does the player experience?
+      description: Not the implementation — the felt outcome, in 2–4 sentences.
+    validations: { required: true }
+  - type: textarea
+    id: why
+    attributes:
+      label: Why does DiliRun need it?
+      description: Fun, fairness, retention, brand — pick the strongest reason and argue it.
+    validations: { required: true }
+  - type: dropdown
+    id: milestone
+    attributes:
+      label: Which milestone does it belong to?
+      options: [M4 the run, M5 feel & polish, M6 screens, M7 ship, post-1.0]
+    validations: { required: true }
+  - type: textarea
+    id: cost
+    attributes:
+      label: Cost and risk
+      description: Files touched, new deps (should be none), perf/DOM impact, what could regress.
+  - type: textarea
+    id: done
+    attributes:
+      label: Definition of done
+      description: Testable statements — what a reviewer checks to call it finished.
+      value: |
+        - [ ]
+        - [ ] unit test covers the rule (if it is a pure rule)

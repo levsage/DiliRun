@@ -1,0 +1,11 @@
+# Everything is owned by the project author unless a more specific rule appears below.
+*                       @levsage
+
+# Generated art must never be edited by hand: regenerate it (docs/ASSETS.md).
+public/assets/          @levsage
+public/icons/           @levsage
+assets/source/          @levsage
+
+# The rig/pose data is design-sensitive: review changes here with the docs in mind.
+tools/asset-pipeline/   @levsage
+src/game/data/          @levsage

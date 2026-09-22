@@ -1,0 +1,27 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 4
+    labels: [chore, dependencies]
+    groups:
+      tooling:
+        patterns:
+          - "vite"
+          - "vitest"
+          - "typescript"
+          - "eslint*"
+          - "@eslint/*"
+          - "prettier"
+          - "jsdom"
+          - "@types/node"
+          - "typescript-eslint"
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+    labels: [chore, ci]

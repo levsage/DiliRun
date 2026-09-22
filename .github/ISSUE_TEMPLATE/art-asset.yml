@@ -1,0 +1,59 @@
+name: Art / animation request
+description: A pose, state, cut or brand-asset change — these are pipeline data, not code.
+title: "art: "
+labels: [art, asset-pipeline]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        All in-game art is generated from `assets/source/` by `tools/asset-pipeline`
+        (see `docs/ASSETS.md`). Never hand-edit files under `public/assets` — describe the
+        change and regenerate.
+  - type: textarea
+    id: request
+    attributes:
+      label: What should change?
+      description: For a new state, name it (e.g. `tired`, `startle`) and describe the silhouette per keyframe.
+      placeholder: |
+        Add `tired`: after a crash with 1 life left, the hero drops the shoulders, cape sags,
+        head tilts 10° down, arms hang 20° forward, 4 frames @ 10fps, loop.
+    validations: { required: true }
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Kind of change
+      options:
+        [
+          new animation state,
+          retune existing pose,
+          rig cut / hinge move,
+          logo or icons,
+          coin or other sprite,
+          source art replacement,
+        ]
+    validations: { required: true }
+  - type: textarea
+    id: rig
+    attributes:
+      label: Rig details
+      description: Which parts move (`head`, `torso`, `arm_left`, …), pivots, and whether the whole body rotates.
+      value: |
+        parts:
+        hinges:
+        body transform: none | rotation/scale about (…)
+  - type: textarea
+    id: frames
+    attributes:
+      label: Frames, fps, loop, hold
+      value: "count: \nfps: \nloop: \nhold: (frame index to freeze on while the action lasts)"
+  - type: checkboxes
+    id: gates
+    attributes:
+      label: Required checks
+      options:
+        - label: "`npm run assets` passes the rest-pose IoU gate (≥ 0.96)"
+          required: true
+        - label: "`out/frames-contact-sheet.png` reviewed at real sprite size"
+          required: true
+        - label: "`?lab=1` checked in the browser"
+          required: true
