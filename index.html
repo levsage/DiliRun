@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en" class="dili-html">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>DiliRun — Dliicom endless runner</title>
+    <meta
+      name="description"
+      content="DiliRun is a 2D Subway-Surfers-style endless runner starring the Dliicom hero. Single player, score board, leaderboard and coin bar."
+    />
+    <meta name="theme-color" content="#122D7B" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="icon" href="./icons/icon-64.png" sizes="64x64" type="image/png" />
+    <link rel="apple-touch-icon" href="./icons/icon-192.png" />
+    <link rel="stylesheet" href="./src/styles/game.css" />
+  </head>
+  <body>
+    <main id="dilirun" class="dili-app" aria-label="DiliRun">
+      <canvas id="dilirun-canvas" class="dili-canvas"></canvas>
+
+      <header class="dili-brand" data-brand>
+        <img
+          class="dili-brand__logo"
+          src="./assets/ui/logo-white.png"
+          alt="Dliicom"
+          width="132"
+          height="80"
+        />
+        <span class="dili-brand__text">
+          <strong class="dili-brand__title">DiliRun</strong>
+          <span class="dili-brand__sub">v1.0.0 · single player</span>
+        </span>
+      </header>
+
+      <div id="dilirun-hud" class="dili-hud"></div>
+
+      <div id="dilirun-boot" class="dili-boot" role="status" aria-live="polite">
+        <div class="dili-boot__inner">
+          <img class="dili-boot__logo" src="./assets/ui/logo-white.png" alt="" width="96" height="58" />
+          <p class="dili-boot__status" data-boot-status>Starting DiliRun…</p>
+          <div class="dili-boot__bar"><i></i></div>
+          <button type="button" class="dili-boot__retry" data-boot-retry hidden>Retry</button>
+          <p class="dili-boot__hint">Tip: add <code>?lab=1</code> to the URL to open the animation bench.</p>
+        </div>
+      </div>
+
+      <noscript>
+        <p class="dili-noscript">DiliRun needs JavaScript. Enable it and reload.</p>
+      </noscript>
+    </main>
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>
