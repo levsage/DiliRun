@@ -57,11 +57,18 @@ exception. Never `--force` past a red check on `main`.
 
 ```bash
 npm run build
+sha=$(git rev-parse --short HEAD)                      # from the source repo, before cd-ing away
 tmp=$(mktemp -d) && cp -r dist/* "$tmp" && cd "$tmp"
 git init -q -b gh-pages
-git add -A && git commit -qm "build: snapshot $(git rev-parse --short HEAD)"
-git push --force git@github.com:levsage/DiliRun.git gh-pages:gh-pages
+git config user.name "DiliRun bot" && git config user.email "dev@dliicom.com"   # the temp repo has no identity
+git add -A && git commit -qm "build: dilirun@$sha"
+git push --force origin gh-pages:gh-pages
 ```
+
+Read the snippet rather than pasting it: `$(git rev-parse --short HEAD)` inside the fresh temp repo is
+the snapshot commit's own hash, not the source build's, and a `mktemp -d` repo inherits no
+`user.name`, so `commit` fails with "Author identity unknown" until you set it. Over HTTPS the push
+URL needs a `Contents:write` token — `git push --force "https://<owner>:${TOKEN}@github.com/levsage/DiliRun.git" gh-pages:gh-pages`.
 
 Replaces the whole site in one commit; Pages rebuilds in ~30 s. Keep the branch build-clean:
 `gh-pages` must contain only `dist/`.
