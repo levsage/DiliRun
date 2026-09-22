@@ -10,10 +10,18 @@
     "accelPerSecond": 0.16,
     "laneChangeSeconds": 0.16,
     "jumpSeconds": 0.62,
+    "jumpPeakMeters": 1.65,
     "jumpPeakLanes": 1,
     "slideSeconds": 0.55,
+    "slideHeightMeters": 0.85,
     "rollSeconds": 0.5,
-    "coyoteSeconds": 0.08
+    "rollHeightMeters": 0.7,
+    "coyoteSeconds": 0.08,
+    "heroHeightMeters": 1.7,
+    "heroDepthMeters": 0.7,
+    "lives": 3,
+    "invulnerableSeconds": 1.05,
+    "crashSpeedFloor": 6.5
   },
   "scoring": {
     "pointsPerMeter": 1.0,
@@ -40,7 +48,19 @@
       ["cluster", 15]
     ],
     "safeStartMeters": 55,
-    "minGapMeters": 14
+    "minGapMeters": 14,
+    "viewLengthMeters": 30,
+    "cullBehindMeters": 4,
+    "gapSpeedFactor": 0.42,
+    "nearMissWindowMeters": 3.2,
+    "coinSpacingMeters": 1.5,
+    "coinsPerPattern": 5,
+    "tiers": [
+      { "maxSpeed": 11, "tier": 1 },
+      { "maxSpeed": 14, "tier": 2 },
+      { "maxSpeed": 17, "tier": 3 },
+      { "maxSpeed": 999, "tier": 4 }
+    ]
   },
   "feel": {
     "hitStopSeconds": 0.11,
