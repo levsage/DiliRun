@@ -10,7 +10,7 @@
     "sprite": "sprites/coin-sheet.png"
   },
   "format": "dilirun-assets-v1",
-  "generatedAt": "2026-09-22T17:57:38+00:00",
+  "generatedAt": "2026-09-22T18:42:07+00:00",
   "generator": "tools/asset-pipeline/build.py",
   "hero": {
     "meta": "sprites/dilirun-hero-sheet.json",
@@ -38,7 +38,7 @@
     "white": "ui/logo-white.png"
   },
   "sources": {
-    "hero": "assets/source/hero_source.png#e8c25a073253",
-    "logo": "assets/source/dliicom_logo.png#82f056cc32e5"
+    "hero": "assets/source/hero_source.png#8b7f7504093f",
+    "logo": "assets/source/dliicom_logo.png#514c300218a4"
   }
 }
