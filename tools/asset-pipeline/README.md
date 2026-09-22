@@ -38,4 +38,3 @@ Module names in this directory are import-visible: `build.py` runs with `tools/a
 and breaks `import numpy` inside the build — in CI only, because the local venv has already imported
 numpy. That is how `inspect.py` earned its rename to `pose_review.py`. Python files here are formatted
 with `black`, not Prettier (Prettier ignores `**/*.py`).
-
