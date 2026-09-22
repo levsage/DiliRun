@@ -99,6 +99,10 @@ fine and visually wrong:
 3. **A crouch has to change the silhouette height, not only the joints.** `slide` and `land` use the
    whole-body transform (`g={"rot", "pivot", "scale", "pos"}`) to squash the figure to ~0.74 of its
    height; limb angles alone never bring the helmet down to the 0.85 m hitbox the game promises.
+4. **Never name a module in `tools/asset-pipeline/` after a stdlib module.** CI runs
+   `python tools/asset-pipeline/build.py` from the repo root, so that directory is `sys.path[0]`; a file
+   called `inspect.py` shadowed stdlib `inspect` and killed `import numpy` in CI only. This is why the
+   review tool is `pose_review.py`.
 
 ### Reviewing a pose
 
@@ -109,7 +113,7 @@ npm run assets:inspect -- --states run,slide,land --open
 npm run dev -- --open "/?lab=1"   # then watch it move
 ```
 
-`tools/asset-pipeline/inspect.py` draws the frame index above every cell and marks the **held**
+`tools/asset-pipeline/pose_review.py` draws the frame index above every cell and marks the **held**
 frame with `*`, because "which frame does this state park on?" is the question a one-shot animation
 lives or dies by. If a pose looks right in a contact sheet and wrong in an inspect strip, it is
 wrong — the strip is what ships.
