@@ -26,7 +26,16 @@ Exit code is non-zero when a gate fails, so CI can block a rig that no longer ma
 `out/` is git-ignored scratch; `docs/preview/animation-preview.gif` is committed and regenerated.
 
 ```bash
-python3 tools/asset-pipeline/inspect.py --states run,slide --open   # out/inspect-*.png + a grid
+python3 tools/asset-pipeline/pose_review.py --states run,slide --open   # out/inspect-*.png + a grid
 ```
 
 Design notes and the "why": [`docs/ASSETS.md`](../../docs/ASSETS.md).
+
+## One module-naming trap
+
+Module names in this directory are import-visible: `build.py` runs with `tools/asset-pipeline/` on
+`sys.path[0]`, so a file named after a stdlib module (`inspect.py`, `json.py`, `types.py`, …) shadows it
+and breaks `import numpy` inside the build — in CI only, because the local venv has already imported
+numpy. That is how `inspect.py` earned its rename to `pose_review.py`. Python files here are formatted
+with `black`, not Prettier (Prettier ignores `**/*.py`).
+
