@@ -10,6 +10,9 @@ Single player · score board · leaderboard · coin bar · v1.0.0
 
 `main` = stable · `beta` = integration · zero runtime dependencies · ~12 KB of JS
 
+[**▶ Play the current build**](https://levsage.github.io/DiliRun/) — no install, works on a phone
+(add it to the home screen: the PWA manifest and icons are already wired up)
+
 </div>
 
 ![animation preview](docs/preview/animation-preview.gif)
@@ -90,9 +93,12 @@ Design docs are the source of truth for _why_: [PLAN](docs/PLAN.md) ·
 
 ## Status
 
-M0–M3 shipped (repo, pipeline, engine primitives, shell + HUD + records).
-**M4 — the playable run** (lanes, spawner, collisions, game over → leaderboard) is next; see
-[docs/ROADMAP.md](docs/ROADMAP.md).
+M0–M3 shipped: repo, asset pipeline + rig QA, engine primitives, game shell with the score board,
+coin bar and leaderboard live on canvas. See [docs/ROADMAP.md](docs/ROADMAP.md) — **M4, the playable
+run**, is next, and `docs/PLAN.md` §7 lists the four decisions the owner still owes.
+
+CI is defined in [`docs/ci/`](docs/ci/README.md) and waiting to be moved into `.github/workflows/`:
+GitHub rejects pushes that touch that folder unless the deploying token has the **Workflows** scope.
 
 ## Credits
 
