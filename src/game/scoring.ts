@@ -38,6 +38,7 @@ export class RunAccumulator {
   private _nearMisses = 0;
   private _crashes = 0;
   private _comboTimer = 0;
+  private _points = 0;
   private _finished = false;
 
   constructor(private readonly cfg: ScoringConfig = SCORING) {}
@@ -46,7 +47,11 @@ export class RunAccumulator {
     return this._combo;
   }
 
-  /** Multiplier applied to distance and coin income, 1.0 .. comboMax. */
+  /**
+   * Streak multiplier, 1.0 .. comboMax. It scales *distance* income only: coins are worth
+   * their face value so the coin bar and the bank stay predictable, and `meters` stays the
+   * literal distance travelled rather than a points disguise.
+   */
   get multiplier(): number {
     return Math.min(this.cfg.comboMax, 1 + this._combo * this.cfg.comboStep);
   }
@@ -60,7 +65,7 @@ export class RunAccumulator {
   }
 
   get score(): number {
-    return Math.floor(this._meters * this.cfg.pointsPerMeter + this._coins * this.cfg.coinValue);
+    return Math.floor(this._points + this._coins * this.cfg.coinValue);
   }
 
   get finished(): boolean {
@@ -82,6 +87,7 @@ export class RunAccumulator {
   addDistance(meters: number, dt: number): void {
     if (this._finished || meters <= 0) return;
     this._meters += meters;
+    this._points += meters * this.cfg.pointsPerMeter * this.multiplier;
     this._comboTimer += dt;
     if (this._comboTimer >= this.cfg.comboWindowSeconds && this._combo > 0) {
       this._combo = 0;
@@ -100,14 +106,14 @@ export class RunAccumulator {
   addNearMiss(): void {
     if (this._finished) return;
     this._nearMisses++;
-    this._meters += this.cfg.nearMissBonus;
+    this._points += this.cfg.nearMissBonus;
     this._combo++;
     this._bestCombo = Math.max(this._bestCombo, this._combo);
   }
 
   addPerfectChange(): void {
     if (this._finished) return;
-    this._meters += this.cfg.perfectLaneChangeBonus;
+    this._points += this.cfg.perfectLaneChangeBonus;
   }
 
   crash(): void {

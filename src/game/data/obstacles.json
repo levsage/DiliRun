@@ -1,0 +1,121 @@
+{
+  "$comment": "Obstacle content. Tuning numbers live in balance.json; this file describes WHAT can block you and what beats it, so a new hazard is a data edit. `clearWith` is matched against the hero's action: an empty list means only a lane change survives. `heightMeters` is the height of a ground hazard, and the CLEARANCE left under an overhead one; `bodyMeters` is how thick the drawn body is. Design table: docs/GAME_DESIGN.md \u00a75.",
+  "kinds": [
+    {
+      "id": "barrierLow",
+      "label": "Crate",
+      "lanes": 1,
+      "lengthMeters": 0.9,
+      "heightMeters": 0.9,
+      "vertical": "ground",
+      "clearWith": ["jump"],
+      "front": "navy",
+      "top": "suit",
+      "tier": 1,
+      "bodyMeters": 0.35
+    },
+    {
+      "id": "barrierHigh",
+      "label": "Beam",
+      "lanes": 1,
+      "lengthMeters": 1.1,
+      "heightMeters": 1.2,
+      "vertical": "overhead",
+      "clearWith": ["slide", "roll"],
+      "front": "danger",
+      "top": "white",
+      "tier": 2,
+      "bodyMeters": 0.5
+    },
+    {
+      "id": "trainLow",
+      "label": "Flatbed",
+      "lanes": 1,
+      "lengthMeters": 6,
+      "heightMeters": 1.6,
+      "vertical": "ground",
+      "clearWith": [],
+      "front": "skyDeep",
+      "top": "sky",
+      "tier": 1,
+      "bodyMeters": 0.4
+    },
+    {
+      "id": "trainTall",
+      "label": "Express",
+      "lanes": 2,
+      "lengthMeters": 10,
+      "heightMeters": 3.2,
+      "vertical": "ground",
+      "clearWith": [],
+      "front": "navy",
+      "top": "suitDeep",
+      "tier": 3,
+      "bodyMeters": 0.5
+    },
+    {
+      "id": "beamRow",
+      "label": "Gantry",
+      "lanes": 3,
+      "lengthMeters": 1.4,
+      "heightMeters": 1.15,
+      "vertical": "overhead",
+      "clearWith": ["slide"],
+      "front": "goldDeep",
+      "top": "gold",
+      "tier": 3,
+      "bodyMeters": 0.75
+    }
+  ],
+  "patterns": [
+    {
+      "id": "single",
+      "tiers": [1],
+      "rows": 1,
+      "obstacles": [["barrierLow"]],
+      "coins": "line"
+    },
+    {
+      "id": "pair",
+      "tiers": [2],
+      "rows": 1,
+      "obstacles": [
+        ["barrierLow", "trainLow"],
+        ["barrierHigh", "barrierLow"],
+        ["trainLow", "barrierHigh"]
+      ],
+      "coins": "line"
+    },
+    {
+      "id": "express",
+      "tiers": [2, 3, 4],
+      "rows": 1,
+      "obstacles": [["trainTall"]],
+      "coins": "arc"
+    },
+    {
+      "id": "gantry",
+      "tiers": [3, 4],
+      "rows": 1,
+      "obstacles": [["beamRow"]],
+      "coins": "line"
+    },
+    {
+      "id": "bait",
+      "tiers": [3, 4],
+      "rows": 1,
+      "obstacles": [
+        ["barrierLow", "beamRow"],
+        ["trainLow", "barrierHigh"]
+      ],
+      "coins": "zigzag"
+    },
+    {
+      "id": "double",
+      "tiers": [4],
+      "rows": 2,
+      "obstacles": [["trainTall"], ["trainLow", "barrierHigh"]],
+      "coins": "cluster"
+    }
+  ]
+}
