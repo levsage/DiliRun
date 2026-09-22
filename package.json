@@ -36,7 +36,8 @@
     "format:check": "prettier --check .",
     "assets": "python3 tools/asset-pipeline/build.py",
     "assets:debug": "python3 tools/asset-pipeline/build.py --debug",
-    "check": "npm run typecheck && npm run lint && npm run test && npm run build"
+    "check": "npm run typecheck && npm run lint && npm run test && npm run build",
+    "assets:inspect": "python3 tools/asset-pipeline/inspect.py --open"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",

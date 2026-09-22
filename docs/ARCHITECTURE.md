@@ -134,9 +134,15 @@ Run: `npm test`. Everything in one command: `npm run check` (typecheck + lint + 
 
 ## 6. Planned seams (M4/M5) — designed in, not yet built
 
-- `game/systems/Spawner.ts` consumes `balance.json.spawn` + `Random.ts`; returns patterns, never
+- `game/entities/Spawner.ts` consumes `balance.json.spawn` + `Random.ts`; returns patterns, never
   canvas nodes. Deterministic per seed → replayable runs and a possible daily challenge for free.
-- `game/systems/Collision.ts` is a pure function `(heroBox, obstacleBoxes) → hit | nearMiss`.
+- `game/systems/Collision.ts` is a pure function `(hero, obstacles, coins, cfg) → contacts`, and the
+  only place a hazard can be marked `hit`, `scored` or `threatened`.
+- `game/entities/Hero.ts` owns lanes, hop arc and stances; `game/systems/RunWorld.ts` owns speed,
+  scroll, lives and the run's phase. Neither imports canvas, DOM or `src/render`, so the whole game
+  is testable on a simulated clock — see `tests/unit/RunWorld.test.ts` and the bot in
+  `tests/unit/worldHarness.ts`, which is also the level generator's fairness proof.
+- `src/app/RunScene.ts` is a view: `world.step()`, then draw. If a rule shows up in there, move it.
 - `render/Camera.ts` will own shake/hit-stop as a post-transform so no entity code needs to know.
 - `platform/Audio.ts` behind an interface, so `AudioContext` unavailability is a no-op implementation.
 - `Leaderboard` already takes a `Store`; a hosted board becomes a second implementation of the same
