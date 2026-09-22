@@ -14,6 +14,8 @@ import type { CoinStrip } from "./AttractScene";
 export interface BootOptions {
   /** Open the dev animation bench (?lab=1). */
   lab?: boolean;
+  /** Skip the menu and start a run immediately (?run=1). */
+  run?: boolean;
 }
 
 export interface BootResult {
@@ -104,6 +106,8 @@ export async function boot(options: BootOptions = {}): Promise<BootResult> {
   shell.mount();
   status?.classList.add("is-done");
   requestAnimationFrame(() => status?.remove());
+
+  if (options.run) shell.startRun();
 
   if (options.lab) {
     const { mountPoseLab } = await import("./PoseLab");
