@@ -85,3 +85,31 @@ If a proper hand-drawn sheet ever replaces the rig: drop the PNG at
 `public/assets/sprites/dilirun-hero-sheet.png`, rewrite the JSON manifest by hand (same `format`,
 `states`, `cell`, `anchor`), and point `imagePath` at it. The runtime does not care how the frames were
 made — the manifest is the whole contract.
+
+## 7. Authoring poses that read at 60 px
+
+Three rules, each learned by reviewing the baked sheet and finding a pose that was mathematically
+fine and visually wrong:
+
+1. **Keyframe values are _deltas_ on top of the state's `base` stance** (`_compose` adds them). A run
+   frame with `arm_left: -52` is really `-34 - 52 = -86°` from the drawing's T-pose — which is why the
+   first run cycle flapped: the arms swept 100° instead of a runner's ~35°.
+2. **Legs forward is a negative rotation** (image space, y grows down). The first `slide` used positive
+   values, so the legs kicked behind the body and the pose read as a trip.
+3. **A crouch has to change the silhouette height, not only the joints.** `slide` and `land` use the
+   whole-body transform (`g={"rot", "pivot", "scale", "pos"}`) to squash the figure to ~0.74 of its
+   height; limb angles alone never bring the helmet down to the 0.85 m hitbox the game promises.
+
+### Reviewing a pose
+
+```bash
+npm run assets:debug          # rebuild the sheet + contact sheets in tools/asset-pipeline/out
+npm run assets:inspect        # crop each state at real sprite size, on the track colour
+npm run assets:inspect -- --states run,slide,land --open
+npm run dev -- --open "/?lab=1"   # then watch it move
+```
+
+`tools/asset-pipeline/inspect.py` draws the frame index above every cell and marks the **held**
+frame with `*`, because "which frame does this state park on?" is the question a one-shot animation
+lives or dies by. If a pose looks right in a contact sheet and wrong in an inspect strip, it is
+wrong — the strip is what ships.

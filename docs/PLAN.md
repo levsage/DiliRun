@@ -70,7 +70,7 @@ backend services, level editors.
       perspective, theme.
 - [x] **M3 — Shell + HUD + records**: canvas stage with DPR/letterbox, score board, coin bar,
       leaderboard panel, attract scene showing the animated hero on the track, `?lab=1` pose bench.
-- [ ] **M4 — The run (gameplay core)**: `RunScene` — lanes & lane changes, jump/slide/roll state
+- [x] **M4 — The run (gameplay core)** — sim, spawner, collisions, HUD flow; 109 tests incl. a bot that clears 3.7 km at max speed: `RunScene` — lanes & lane changes, jump/slide/roll state
       machine, obstacle spawner with patterns, AABB collisions, lives/stumble, speed curve,
       scoring/combo, pause & resume, game-over → leaderboard submit.
 - [ ] **M5 — Feel & polish**: parallax layers, coin magnet FX, screen shake, hit-stop, WebAudio SFX

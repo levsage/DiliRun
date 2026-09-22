@@ -51,10 +51,21 @@ landing — this is the single biggest "feels good" item in a runner.
 | `trainTall`   | 2 lanes, 10 m    | lane change    | forces a specific lane, telegraphed one pattern earlier |
 | `beamRow`     | 3 lanes overhead | slide anywhere | the "greedy" pattern: punish if the player jumps        |
 
+Heights come from `game/data/obstacles.json`, where `heightMeters` means _how tall a ground hazard
+is_ and, for an overhead one, _how much clearance is left under it_. Collision never measures
+pixels: a hazard is beaten by whatever is in its `clearWith` list, matched against the hero's
+stance — which is why the art can be re-posed without changing any rule.
+
 Spawn rules (`systems/Spawner.ts`, tuning in `game/data/balance.json`):
 
 - First `safeStartMeters` (55 m) is empty — the player gets their feet under them.
-- Every pattern leaves **at least one solvable lane** and a `minGapMeters` (14 m) breather.
+- Every pattern leaves **at least one solvable lane**, and _solvable_ is strict: there must be
+  **one single action** that beats everything standing in that lane. A crate (jump) and a gantry
+  (slide) in the same lane are two fair hazards and no fair answer, so `Spawner.answerForLane`
+  returns `null` and the row is repaired by opening a lane. Asserted in `Spawner.test.ts`.
+- Consecutive patterns are `minGapMeters` (14 m) apart, widened by `gapSpeedFactor` with speed;
+  rows _inside_ one pattern (the `double` combo) are spaced by `max(9 m, 0.55 s)`, so a combo at
+  21 m/s is still readable. Also asserted.
 - Difficulty tiers by speed: T1 single obstacles → T2 two-lane blocks → T3 coin-line bait +
   `beamRow` → T4 double trains with a coin arc reward in the safe lane.
 - Coin patterns are placed **through the solution**, so the correct path is also the profitable path.

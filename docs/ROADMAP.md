@@ -24,16 +24,16 @@ feature/m4-run-scene ──► beta ──(release cut)──► main  (tag v1.0
 
 ## Milestones
 
-| #   | Milestone             | Contents                                                                                | Status  |
-| --- | --------------------- | --------------------------------------------------------------------------------------- | ------- |
-| M0  | Repo foundation       | structure, TS/Vite/Vitest/ESLint/Prettier, CI, Pages workflow, docs                     | ✅ done |
-| M1  | Brand + art pipeline  | logo tints, icons, hero segmentation + rig + pose library + sheet bake, QA gates        | ✅ done |
-| M2  | Engine primitives     | loop, assets, storage, input, rng, emitter, animator, perspective, theme                | ✅ done |
-| M3  | Shell + HUD + records | stage, attract scene, score board, coin bar, leaderboard, pose lab                      | ✅ done |
-| M4  | The run               | lanes, jump/slide/roll FSM, spawner, collisions, lives, speed curve, game over → submit | ⏳ next |
-| M5  | Feel & polish         | parallax, coin FX, shake/hit-stop, WebAudio SFX, score pop-ups                          | ⏳      |
-| M6  | Screens               | title, how-to, settings (sound/quality/controls), pause, game-over card                 | ⏳      |
-| M7  | Ship v1.0.0           | mobile pass, Lighthouse, README/GIF, `beta` → `main`, tag + deploy                      | ⏳      |
+| #   | Milestone             | Contents                                                                                | Status                 |
+| --- | --------------------- | --------------------------------------------------------------------------------------- | ---------------------- |
+| M0  | Repo foundation       | structure, TS/Vite/Vitest/ESLint/Prettier, CI, Pages workflow, docs                     | ✅ done                |
+| M1  | Brand + art pipeline  | logo tints, icons, hero segmentation + rig + pose library + sheet bake, QA gates        | ✅ done                |
+| M2  | Engine primitives     | loop, assets, storage, input, rng, emitter, animator, perspective, theme                | ✅ done                |
+| M3  | Shell + HUD + records | stage, attract scene, score board, coin bar, leaderboard, pose lab                      | ✅ done                |
+| M4  | The run               | lanes, jump/slide/roll FSM, spawner, collisions, lives, speed curve, game over → submit | ✅ sim + scene shipped |
+| M5  | Feel & polish         | parallax, coin FX, shake/hit-stop, WebAudio SFX, score pop-ups                          | ⏳                     |
+| M6  | Screens               | title, how-to, settings (sound/quality/controls), pause, game-over card                 | ⏳                     |
+| M7  | Ship v1.0.0           | mobile pass, Lighthouse, README/GIF, `beta` → `main`, tag + deploy                      | ⏳                     |
 
 ## Post-1.0 candidates (parked, not promised)
 

@@ -25,4 +25,8 @@ python build.py --cell 320 --min-iou 0.98        # smaller art, stricter gate
 Exit code is non-zero when a gate fails, so CI can block a rig that no longer matches the source art.
 `out/` is git-ignored scratch; `docs/preview/animation-preview.gif` is committed and regenerated.
 
+```bash
+python3 tools/asset-pipeline/inspect.py --states run,slide --open   # out/inspect-*.png + a grid
+```
+
 Design notes and the "why": [`docs/ASSETS.md`](../../docs/ASSETS.md).
