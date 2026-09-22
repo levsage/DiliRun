@@ -581,3 +581,248 @@ body {
     animation: none;
   }
 }
+
+/* ---------------------------------------------------------------- lives ---- */
+.dili-lives {
+  grid-column: 2;
+  grid-row: 3;
+  align-self: end;
+  display: flex;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: 999px;
+  background: var(--dili-panel);
+  border: 1px solid var(--dili-panel-line);
+  backdrop-filter: blur(8px);
+}
+
+.dili-lives__pip {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 32% 28%, var(--dili-cyan), var(--dili-navy) 72%);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.45) inset,
+    0 2px 6px rgba(3, 10, 28, 0.5);
+  transition:
+    transform 160ms ease,
+    opacity 160ms ease;
+}
+
+.dili-lives__pip.is-spent {
+  background: transparent;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.28) inset;
+  opacity: 0.5;
+  transform: scale(0.82);
+}
+
+.dili-lives.is-hit {
+  animation: dili-lives-hit 320ms ease-out;
+}
+
+@keyframes dili-lives-hit {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  25% {
+    transform: translate3d(-5px, 2px, 0);
+  }
+  60% {
+    transform: translate3d(4px, -1px, 0);
+  }
+}
+
+/* -------------------------------------------------------- summary card ---- */
+/* One component, three tones (ready / paused / over). The veil is the whole
+   screen so a tap anywhere can start the run, which is the only control a
+   phone player looks for. */
+.dili-summary {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background:
+    radial-gradient(120% 80% at 50% 0%, rgba(10, 28, 79, 0.35), rgba(4, 12, 34, 0.78) 70%),
+    rgba(4, 12, 34, 0.4);
+  backdrop-filter: blur(2px);
+  pointer-events: auto;
+  animation: dili-fade-in 220ms ease-out;
+}
+
+.dili-summary[hidden] {
+  display: none;
+}
+
+.dili-summary__card {
+  width: min(360px, 100%);
+  padding: 18px 18px 14px;
+  border-radius: 20px;
+  background: linear-gradient(180deg, rgba(20, 45, 110, 0.92), rgba(8, 20, 55, 0.94));
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow:
+    var(--dili-shadow),
+    0 0 0 1px rgba(79, 208, 255, 0.12) inset;
+  text-align: center;
+  animation: dili-rise 260ms cubic-bezier(0.16, 0.9, 0.3, 1.1);
+}
+
+.dili-summary[data-tone="over"] .dili-summary__card {
+  border-color: rgba(255, 200, 61, 0.45);
+}
+
+.dili-summary__kicker {
+  margin: 0 0 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--dili-cyan);
+}
+
+.dili-summary__kicker[hidden] {
+  display: none;
+}
+
+.dili-summary__title {
+  margin: 0 0 10px;
+  font-family: var(--dili-font-display);
+  font-size: clamp(24px, 8vw, 34px);
+  line-height: 1.06;
+  letter-spacing: 0.01em;
+  text-shadow: 0 3px 0 rgba(4, 12, 34, 0.45);
+}
+
+.dili-summary__lines {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 4px 12px;
+  margin: 0 0 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.dili-summary__lines[hidden] {
+  display: none;
+}
+
+.dili-summary__line {
+  display: contents;
+}
+
+.dili-summary__line dt {
+  grid-column: 1;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6);
+  text-align: left;
+  margin: 0;
+}
+
+.dili-summary__line dd {
+  grid-column: 2;
+  margin: 0;
+  font-family: var(--dili-font-display);
+  font-size: 16px;
+  font-variant-numeric: tabular-nums;
+}
+
+.dili-summary__line.is-emphasis dd {
+  font-size: 24px;
+  color: var(--dili-gold);
+}
+
+.dili-summary__note {
+  margin: 0 0 12px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.74);
+}
+
+.dili-summary__note[hidden] {
+  display: none;
+}
+
+.dili-summary__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dili-summary__primary,
+.dili-summary__secondary {
+  appearance: none;
+  border-radius: 999px;
+  padding: 13px 18px;
+  font-family: var(--dili-font-display);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition:
+    transform 120ms ease,
+    filter 120ms ease;
+}
+
+.dili-summary__primary {
+  border: 0;
+  color: var(--dili-navy-deep);
+  background: linear-gradient(180deg, #ffe08a, var(--dili-gold) 55%, var(--dili-gold-deep));
+  box-shadow: 0 4px 0 rgba(120, 68, 6, 0.85);
+}
+
+.dili-summary__primary:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 rgba(120, 68, 6, 0.85);
+}
+
+.dili-summary__secondary {
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  font-size: 13px;
+  padding: 9px 14px;
+}
+
+.dili-summary__secondary[hidden] {
+  display: none;
+}
+
+.dili-summary__primary:focus-visible,
+.dili-summary__secondary:focus-visible {
+  outline: 2px solid var(--dili-cyan);
+  outline-offset: 2px;
+}
+
+.dili-app[data-mode="attract"] .dili-lives {
+  opacity: 0.35;
+}
+
+@keyframes dili-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes dili-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.97);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dili-summary,
+  .dili-summary__card {
+    animation: none;
+  }
+  .dili-lives.is-hit {
+    animation: none;
+  }
+  .dili-lives__pip {
+    transition: none;
+  }
+}
