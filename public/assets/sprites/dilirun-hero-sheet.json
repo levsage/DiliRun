@@ -100,11 +100,11 @@
   "formats": {
     "webp": {
       "path": "dilirun-hero-sheet.webp",
-      "bytes": 1372104
+      "bytes": 1367436
     },
     "png": {
       "path": "dilirun-hero-sheet.png",
-      "bytes": 5039800
+      "bytes": 4938851
     }
   }
 }
