@@ -1,0 +1,33 @@
+{
+  "$comment": "Single source of truth for DiliRun brand colours. Sampled from the uploaded hero art (suit #69B3E9, cape #122D7B, sky #4F96DA) so the in-game palette and the generated sprites can never drift apart.",
+  "name": "DiliRun",
+  "tagline": "Dliicom endless runner",
+  "colors": {
+    "white": "#FFFFFF",
+    "ink": "#16233C",
+    "navy": "#122D7B",
+    "navyDeep": "#0A1C4F",
+    "suit": "#69B3E9",
+    "suitDeep": "#3F86C4",
+    "sky": "#4F96DA",
+    "skyDeep": "#2A63B4",
+    "cyan": "#4FD0FF",
+    "gold": "#FFC83D",
+    "goldDeep": "#E09A16",
+    "goldEdge": "#9C6206",
+    "danger": "#FF4D5E",
+    "mint": "#2BD98A",
+    "track": "#2C3A57",
+    "trackLight": "#3B4E72",
+    "rail": "#8FA6C9"
+  },
+  "fonts": {
+    "display": "ui-rounded, 'Baloo Da 2', 'Hind Siliguri', 'Trebuchet MS', system-ui, sans-serif",
+    "ui": "'Hind Siliguri', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
+    "note": "No webfonts are downloaded: these are optional local faces with safe fallbacks (Hind Siliguri / Baloo Da 2 give proper Bengali glyphs when the OS has them)."
+  },
+  "logo": {
+    "clearSpace": 0.12,
+    "minWidthRatio": 0.18
+  }
+}

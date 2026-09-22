@@ -1,0 +1,50 @@
+{
+  "$comment": "Gameplay tuning. Values are data, not code, so they can be rebalanced without touching logic and asserted from tests.",
+  "lanes": {
+    "count": 3,
+    "width": 1.0
+  },
+  "run": {
+    "startSpeed": 9.0,
+    "maxSpeed": 21.0,
+    "accelPerSecond": 0.16,
+    "laneChangeSeconds": 0.16,
+    "jumpSeconds": 0.62,
+    "jumpPeakLanes": 1,
+    "slideSeconds": 0.55,
+    "rollSeconds": 0.5,
+    "coyoteSeconds": 0.08
+  },
+  "scoring": {
+    "pointsPerMeter": 1.0,
+    "coinValue": 25,
+    "comboStep": 0.1,
+    "comboMax": 5.0,
+    "comboWindowSeconds": 2.6,
+    "nearMissBonus": 40,
+    "perfectLaneChangeBonus": 12
+  },
+  "economy": {
+    "coinBankKey": "coins.bank",
+    "scoreboardKey": "scoreboard",
+    "leaderboardKey": "leaderboard",
+    "settingsKey": "settings",
+    "leaderboardSize": 10,
+    "recentRunsSize": 20
+  },
+  "spawn": {
+    "coinPatternWeights": [
+      ["line", 40],
+      ["arc", 25],
+      ["zigzag", 20],
+      ["cluster", 15]
+    ],
+    "safeStartMeters": 55,
+    "minGapMeters": 14
+  },
+  "feel": {
+    "hitStopSeconds": 0.11,
+    "shakeOnCrash": 7,
+    "coinPopScale": 1.22
+  }
+}
