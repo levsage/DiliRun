@@ -1,0 +1,44 @@
+{
+  "coin": {
+    "cell": 128,
+    "format": "dilirun-strip-v1",
+    "fps": 14,
+    "frames": 12,
+    "image": "coin-sheet.png",
+    "loop": true,
+    "meta": "sprites/coin-sheet.json",
+    "sprite": "sprites/coin-sheet.png"
+  },
+  "format": "dilirun-assets-v1",
+  "generatedAt": "2026-09-23T04:33:10+00:00",
+  "generator": "tools/asset-pipeline/build.py",
+  "hero": {
+    "meta": "sprites/dilirun-hero-sheet.json",
+    "sprite": "sprites/dilirun-hero-sheet.webp"
+  },
+  "heroCuts": {
+    "idle": "ui/hero-idle.png",
+    "portrait": "ui/hero-portrait.png"
+  },
+  "icons": [
+    "icons/icon-512.png",
+    "icons/icon-192.png",
+    "icons/icon-96.png",
+    "icons/icon-64.png",
+    "icons/icon-32.png",
+    "icons/icon-maskable-512.png"
+  ],
+  "logo": {
+    "cyan": "ui/logo-cyan.png",
+    "navy": "ui/logo-navy.png",
+    "sourceSize": [
+      660,
+      400
+    ],
+    "white": "ui/logo-white.png"
+  },
+  "sources": {
+    "hero": "assets/source/hero_source.png#8b7f7504093f",
+    "logo": "assets/source/dliicom_logo.png#514c300218a4"
+  }
+}

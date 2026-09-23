@@ -1,0 +1,19 @@
+{
+  "name": "DiliRun — Dliicom endless runner",
+  "short_name": "DiliRun",
+  "description": "A 2D Subway-Surfers-style endless runner starring the Dliicom hero. Single player, score board, leaderboard and coin bar.",
+  "version": "1.0.0",
+  "id": "/dilirun/",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "portrait",
+  "background_color": "#0A1C4F",
+  "theme_color": "#122D7B",
+  "categories": ["games"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
