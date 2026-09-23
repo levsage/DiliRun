@@ -4,8 +4,8 @@
   "imagePath": "sprites/dilirun-hero-sheet.webp",
   "cell": 384,
   "columns": 8,
-  "rows": 7,
-  "frameCount": 55,
+  "rows": 6,
+  "frameCount": 47,
   "anchor": {
     "x": 0.5,
     "y": 0.955
@@ -17,66 +17,76 @@
       "count": 6,
       "fps": 8,
       "loop": true,
-      "hold": 0
+      "hold": 0,
+      "source": "rig"
     },
     "run": {
       "from": 6,
-      "count": 8,
-      "fps": 17,
-      "loop": true
+      "count": 6,
+      "fps": 16,
+      "loop": true,
+      "source": "generated"
     },
     "dash": {
-      "from": 14,
+      "from": 12,
       "count": 3,
       "fps": 14,
       "loop": true,
-      "hold": 1
+      "hold": 1,
+      "source": "rig"
     },
     "jump": {
-      "from": 17,
-      "count": 5,
-      "fps": 15,
+      "from": 15,
+      "count": 2,
+      "fps": 14,
       "loop": false,
-      "hold": 3
+      "hold": 1,
+      "source": "generated"
     },
     "fall": {
-      "from": 22,
-      "count": 3,
+      "from": 17,
+      "count": 2,
       "fps": 10,
       "loop": true,
-      "hold": 0
+      "hold": 1,
+      "source": "generated"
     },
     "land": {
-      "from": 25,
-      "count": 4,
+      "from": 19,
+      "count": 3,
       "fps": 16,
       "loop": false,
-      "hold": 3
+      "hold": 2,
+      "source": "generated"
     },
     "slide": {
-      "from": 29,
-      "count": 4,
+      "from": 22,
+      "count": 3,
       "fps": 18,
       "loop": false,
-      "hold": 2
+      "hold": 1,
+      "source": "generated"
     },
     "roll": {
-      "from": 33,
+      "from": 25,
       "count": 8,
       "fps": 24,
-      "loop": false
+      "loop": false,
+      "source": "rig"
     },
     "stumble": {
-      "from": 41,
+      "from": 33,
       "count": 6,
       "fps": 16,
-      "loop": false
+      "loop": false,
+      "source": "rig"
     },
     "victory": {
-      "from": 47,
+      "from": 39,
       "count": 8,
       "fps": 13,
-      "loop": true
+      "loop": true,
+      "source": "rig"
     }
   },
   "aliases": {
@@ -100,11 +110,11 @@
   "formats": {
     "webp": {
       "path": "dilirun-hero-sheet.webp",
-      "bytes": 1367436
+      "bytes": 1080394
     },
     "png": {
       "path": "dilirun-hero-sheet.png",
-      "bytes": 4938851
+      "bytes": 3823691
     }
   }
 }
