@@ -31,28 +31,63 @@ export function formatWhen(at: number, now = Date.now()): string {
   return `${Math.floor(hours / 24)}d ago`;
 }
 
+export interface LeaderboardLabels {
+  title: string;
+  hint: string;
+  empty: string;
+  you: string;
+  /** What a run made before names existed (or by a nameless player) is credited to. */
+  unnamed: string;
+}
+
 export class LeaderboardPanel {
   private root: HTMLElement;
   private list: HTMLElement;
   private empty: HTMLElement;
   private title: HTMLElement;
+  private hint: HTMLElement;
+  private labels: LeaderboardLabels;
 
-  constructor(options: { title?: string } = {}) {
+  constructor(options: Partial<LeaderboardLabels> = {}) {
+    this.labels = {
+      title: "Top runs",
+      hint: "single player · this device",
+      empty: "No runs yet — go set the first one.",
+      you: "You",
+      unnamed: "Runner",
+      ...options,
+    };
     const el = document.createElement("section");
     el.className = "dili-board";
+    el.setAttribute("data-dili-ui", "");
     el.innerHTML = `
       <header class="dili-board__head">
-        <h2 class="dili-board__title">${options.title ?? "Top runs"}</h2>
-        <span class="dili-board__hint">single player · this device</span>
+        <h2 class="dili-board__title"></h2>
+        <span class="dili-board__hint"></span>
       </header>
       <ol class="dili-board__list"></ol>
-      <p class="dili-board__empty" hidden>No runs yet — go set the first one.</p>
+      <p class="dili-board__empty" hidden></p>
     `;
     this.root = el;
     this.list = el.querySelector(".dili-board__list") as HTMLElement;
     this.empty = el.querySelector(".dili-board__empty") as HTMLElement;
     this.title = el.querySelector(".dili-board__title") as HTMLElement;
+    this.hint = el.querySelector(".dili-board__hint") as HTMLElement;
+    // Text, not markup: these strings come from the bundle and a name never does.
+    this.setTitle(this.labels.title);
+    this.empty.textContent = this.labels.empty;
+    this.hint.textContent = this.labels.hint;
   }
+
+  setLabels(next: Partial<LeaderboardLabels>): void {
+    this.labels = { ...this.labels, ...next };
+    this.title.textContent = this.labels.title;
+    this.hint.textContent = this.labels.hint;
+    this.empty.textContent = this.labels.empty;
+    this.render(this.lastRows);
+  }
+
+  private lastRows: LeaderboardRow[] = [];
 
   get element(): HTMLElement {
     return this.root;
@@ -63,17 +98,29 @@ export class LeaderboardPanel {
   }
 
   render(rows: LeaderboardRow[]): void {
+    this.lastRows = rows;
     this.list.replaceChildren(
       ...rows.map(({ rank, record, isSelf }) => {
         const li = document.createElement("li");
         li.className = isSelf ? "dili-board__row is-self" : "dili-board__row";
         li.innerHTML = `
           <span class="dili-board__rank">${rank}</span>
+          <span class="dili-board__name"></span>
           <span class="dili-board__score">${Math.floor(record.score).toLocaleString("en-US")}</span>
           <span class="dili-board__meta">${Math.floor(record.meters).toLocaleString("en-US")} m</span>
           <span class="dili-board__coins">${record.coins}<i aria-hidden="true"></i></span>
           <span class="dili-board__when">${formatWhen(record.at)}</span>
         `;
+        // The name is the only free-text field on this screen, so it goes in as textContent.
+        const who = li.querySelector(".dili-board__name") as HTMLElement;
+        who.textContent = record.name?.trim() || this.labels.unnamed;
+        if (isSelf) {
+          const chip = document.createElement("b");
+          chip.className = "dili-board__you";
+          chip.textContent = this.labels.you;
+          who.appendChild(document.createTextNode(" "));
+          who.appendChild(chip);
+        }
         return li;
       }),
     );

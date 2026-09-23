@@ -18,22 +18,32 @@ export class CoinBar {
   private bankEl!: HTMLElement;
   private fill!: HTMLElement;
   private milestone: number;
+  private label: string;
 
-  constructor(options: { milestoneSize?: number } = {}) {
+  constructor(options: { milestoneSize?: number; label?: string } = {}) {
     this.milestone = options.milestoneSize ?? 25;
+    this.label = options.label ?? "Coins";
     this.build();
+  }
+
+  /** The currency's name is brand copy, so the shell hands it in (and can change it). */
+  setLabel(text: string): void {
+    this.label = text;
+    this.root?.setAttribute("aria-label", text);
+    const bank = this.root?.querySelector(".dili-coinbar__bank");
+    if (bank) bank.setAttribute("title", text);
   }
 
   private build(): void {
     const el = document.createElement("div");
     el.className = "dili-coinbar";
     el.setAttribute("role", "status");
-    el.setAttribute("aria-label", "Coins");
+    el.setAttribute("aria-label", this.label);
     el.innerHTML = `
       <span class="dili-coinbar__icon" aria-hidden="true"></span>
       <span class="dili-coinbar__count">0</span>
       <span class="dili-coinbar__divider" aria-hidden="true"></span>
-      <span class="dili-coinbar__bank" title="Banked coins">0</span>
+      <span class="dili-coinbar__bank">0</span>
       <span class="dili-coinbar__track" aria-hidden="true"><i></i></span>
     `;
     this.root = el;

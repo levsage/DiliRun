@@ -308,7 +308,9 @@ body {
 
 .dili-board__row {
   display: grid;
-  grid-template-columns: 1.8rem 1fr auto auto;
+  /* rank · name · score · metres · coins · when. The last two are dropped on a phone, and because the
+     hidden cells are display:none the row reflows to what is left instead of leaving holes. */
+  grid-template-columns: 1.8rem minmax(0, 1fr) auto auto auto auto;
   align-items: center;
   gap: 8px;
   padding: 4px 6px;
@@ -333,6 +335,24 @@ body {
 
 .dili-board__row:first-child .dili-board__rank {
   color: var(--dili-gold);
+}
+
+.dili-board__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.dili-board__you {
+  padding: 1px 5px;
+  border-radius: 999px;
+  background: var(--dili-gold);
+  color: #1b1405;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .dili-board__score {
@@ -797,8 +817,14 @@ body {
   outline-offset: 2px;
 }
 
-.dili-app[data-mode="attract"] .dili-lives {
+.dili-app[data-mode="home"] .dili-lives {
   opacity: 0.35;
+}
+
+/* In a live run the device-local history is noise: the board and the name field stay on home. */
+.dili-app[data-mode="run"] .dili-board,
+.dili-app[data-mode="run"] .dili-home {
+  display: none;
 }
 
 @keyframes dili-fade-in {
@@ -824,5 +850,225 @@ body {
   }
   .dili-lives__pip {
     transition: none;
+  }
+}
+
+/* ── home stage ────────────────────────────────────────────────────────────────────────
+   The card the run starts and ends on: brand, the four numbers that matter, the name that
+   goes on the board, and one big button. It sits over the attract scene rather than a blank
+   screen, so the game is visible behind it and the transition into a run is a zoom, not a cut.
+   Layout only — every word is injected by GameShell from data/strings.json. */
+.dili-home {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: calc(var(--dili-safe-t) + 78px) 14px calc(var(--dili-safe-b) + 16px);
+  background: radial-gradient(
+    124% 78% at 50% 4%,
+    rgba(6, 16, 40, 0.82),
+    rgba(6, 16, 40, 0.4) 58%,
+    rgba(6, 16, 40, 0) 82%
+  );
+  animation: dili-fade-in 0.28s ease both;
+}
+
+.dili-home[hidden] {
+  display: none;
+}
+
+.dili-home__card {
+  display: grid;
+  gap: 12px;
+  width: min(360px, 100%);
+  padding: 18px 16px 14px;
+  border-radius: var(--dili-radius);
+  border: 1px solid var(--dili-panel-line);
+  background: var(--dili-panel);
+  box-shadow: var(--dili-shadow);
+  backdrop-filter: blur(10px);
+  color: #fff;
+  text-align: center;
+  animation: dili-rise 0.34s cubic-bezier(0.2, 0.9, 0.2, 1) both;
+}
+
+.dili-home__kicker {
+  margin: 0;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--dili-gold);
+}
+
+.dili-home__title {
+  margin: 0;
+  font-family: var(--dili-font-display);
+  font-size: 34px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.dili-home__tagline {
+  margin: 0;
+  font-size: 13px;
+  opacity: 0.82;
+}
+
+.dili-home__stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 2px 0 0;
+}
+
+.dili-home__stat {
+  padding: 7px 10px;
+  border-radius: calc(var(--dili-radius) - 5px);
+  background: rgba(255, 255, 255, 0.08);
+  text-align: left;
+}
+
+.dili-home__stat dt {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0.68;
+}
+
+.dili-home__stat dd {
+  margin: 1px 0 0;
+  font-family: var(--dili-font-display);
+  font-size: 19px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.dili-home__name {
+  display: grid;
+  gap: 6px;
+  text-align: left;
+}
+
+.dili-home__name-label {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0.68;
+}
+
+.dili-home__name-row {
+  display: flex;
+  gap: 8px;
+}
+
+.dili-home__name-input {
+  flex: 1;
+  min-width: 0;
+  padding: 9px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--dili-panel-line);
+  background: rgba(6, 16, 40, 0.55);
+  color: #fff;
+  font: inherit;
+  font-size: 15px;
+}
+
+.dili-home__name-input::placeholder {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.dili-home__name-input:focus-visible,
+.dili-home__name-save:focus-visible,
+.dili-home__play:focus-visible,
+.dili-home__ghost:focus-visible {
+  outline: 2px solid var(--dili-gold);
+  outline-offset: 2px;
+}
+
+.dili-home__name-save {
+  padding: 0 12px;
+  border-radius: 10px;
+  border: 1px solid var(--dili-panel-line);
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.dili-home__name-hint,
+.dili-home__controls {
+  margin: 0;
+  font-size: 11px;
+  opacity: 0.66;
+}
+
+.dili-home__saved {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--dili-cyan);
+}
+
+.dili-home__saved.is-blip {
+  animation: dili-rise 1s ease both;
+}
+
+.dili-home__actions {
+  display: grid;
+  gap: 8px;
+}
+
+.dili-home__play {
+  padding: 14px 18px;
+  border: 0;
+  border-radius: 14px;
+  background: linear-gradient(180deg, var(--dili-gold), var(--dili-gold-deep));
+  color: #1b1405;
+  font: inherit;
+  font-family: var(--dili-font-display);
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  box-shadow: 0 6px 18px rgba(255, 200, 61, 0.3);
+}
+
+.dili-home__play:active {
+  transform: translateY(1px);
+}
+
+.dili-home__minor {
+  display: flex;
+  gap: 8px;
+}
+
+.dili-home__ghost {
+  flex: 1;
+  padding: 9px 10px;
+  border-radius: 12px;
+  border: 1px solid var(--dili-panel-line);
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.dili-home__reset.is-armed {
+  border-color: var(--dili-danger);
+  background: rgba(255, 77, 94, 0.26);
+  animation: dili-lives-hit 0.4s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dili-home,
+  .dili-home__card,
+  .dili-home__saved.is-blip,
+  .dili-home__reset.is-armed {
+    animation: none;
   }
 }

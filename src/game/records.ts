@@ -16,6 +16,12 @@ export interface RunRecord extends RunSnapshot {
   mode: "solo";
   /** cosmetic: which hero skin / powerups were active */
   tags?: string[];
+  /**
+   * Who ran it, from `profile.ts`, stamped in at submit time rather than read back later — a board row
+   * keeps the name the run was made under even after the player renames themselves. Absent on records
+   * written before the field existed, which is why the UI renders a fallback rather than "".
+   */
+  name?: string;
 }
 
 export interface ScoreboardState {
@@ -103,13 +109,14 @@ export class Leaderboard {
    * Persist one finished run. Returns its 1-based rank (0 = below the cut-off) so
    * the game over screen can celebrate a genuine placement.
    */
-  submit(run: RunSnapshot, tags: string[] = []): { record: RunRecord; rank: number } {
+  submit(run: RunSnapshot, tags: string[] = [], name?: string): { record: RunRecord; rank: number } {
     const record: RunRecord = {
       ...run,
       id: makeId(),
       at: Date.now(),
       mode: "solo",
       ...(tags.length ? { tags } : {}),
+      ...(name ? { name } : {}),
     };
     const rows = this.top(this.limit + 1);
     const withNew = [...rows, record].sort((a, b) => compareRuns(a, b));

@@ -56,6 +56,11 @@ export class Lives {
     this.root.setAttribute("aria-valuenow", String(value));
   }
 
+  setLabel(text: string): void {
+    this.label = text;
+    this.root?.setAttribute("aria-label", text);
+  }
+
   reset(): void {
     this.last = this.pips.length;
     this.update(this.pips.length);
