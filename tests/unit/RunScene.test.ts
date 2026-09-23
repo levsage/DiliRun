@@ -14,6 +14,7 @@ import { RunScene } from "../../src/app/RunScene";
 import { RunWorld } from "../../src/game/systems/RunWorld";
 import type { Stage } from "../../src/render/Stage";
 import type { SheetManifest } from "../../src/render/SpriteAnimator";
+import { PLATE_COLOUR } from "../../src/render/Glyphs";
 
 const manifest = JSON.parse(
   readFileSync(resolve(process.cwd(), "public/assets/sprites/dilirun-hero-sheet.json"), "utf8"),
@@ -53,6 +54,7 @@ function recordingCtx(calls: DrawCall[], bad: string[]) {
     },
     set(obj, key: string, value: unknown) {
       if (typeof value === "number" && !Number.isFinite(value)) bad.push(`${key}=${value}`);
+      calls.push({ name: `set:${key}`, args: [value] });
       obj[key] = value;
       return true;
     },
@@ -121,6 +123,26 @@ describe("RunScene — the canvas contract", () => {
     expect(peak).toBeLessThan(90);
     // Everything still in the list is reachable by the projection: no ghost entities behind us.
     for (const o of world.obstacles) expect(o.meters).toBeGreaterThan(-world.viewLength);
+  });
+
+  it("paints the action arrow on a hazard that has one", () => {
+    const { scene, world, calls } = makeScene(31);
+    world.start(31);
+    let painted = 0;
+    for (let i = 0; i < 2400 && painted === 0; i++) {
+      scene.update(1 / 60);
+      const signalled = world.obstacles.some(
+        (o) => o.meters > 2 && o.meters < 20 && o.kind.signal !== "none",
+      );
+      if (!signalled) continue;
+      const from = calls.length;
+      scene.render();
+      // The plate colour is only ever set by paintSignal, so this counts glyphs — not scenery.
+      painted = calls
+        .slice(from)
+        .filter((c) => c.name === "set:fillStyle" && c.args[0] === PLATE_COLOUR).length;
+    }
+    expect(painted, "no glyph plate was painted for a hazard that asks for one").toBeGreaterThan(0);
   });
 
   it("shows the celebration only when the shell says the record fell", () => {

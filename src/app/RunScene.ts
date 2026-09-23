@@ -15,6 +15,7 @@ import type { Stage } from "../render/Stage";
 import { DEFAULT_TRACK, depthFor, laneX, project, type TrackView } from "../render/Perspective";
 import { SpriteAnimator, frameRect, type SheetManifest } from "../render/SpriteAnimator";
 import { color } from "../render/Theme";
+import { chevrons, plate, PLATE_COLOUR, shapeFor, signalAlpha, spinArrow } from "../render/Glyphs";
 import type { CoinStrip } from "./AttractScene";
 
 export interface RunSceneDeps {
@@ -35,6 +36,8 @@ export class RunScene {
   private readonly animator: SpriteAnimator;
   private readonly world: RunWorld;
   private scroll = 0;
+  /** Sim-time clock for the glyph pulse; deterministic because it advances with the fixed step. */
+  private pulse = 0;
   private celebration = false;
   /** Reused every frame: depth sorting without allocating, because this runs 60x/second. */
   private readonly zbuf: ZItem[] = [];
@@ -64,6 +67,7 @@ export class RunScene {
   }
 
   update(dt: number): void {
+    this.pulse += dt;
     this.world.step(dt);
     const view = (this.last = this.world.view());
     this.scroll += view.speed * dt;
@@ -271,7 +275,67 @@ export class RunScene {
       ctx.fillStyle = color("danger");
       ctx.fillRect(cxN - halfNear, yN1, halfNear * 2, Math.max(3, 6 * pN.scale));
     }
+
+    this.paintSignal(ctx, o, cxN, yN0, yN1, pN.scale, clearance * PPM * pN.scale);
     ctx.globalAlpha = 1;
+  }
+
+  /**
+   * The action arrow on the face of a hazard — the "why you cannot just keep running" mark (§5.1).
+   *
+   * Three shapes only, because the player has three actions: ↑ jump, ↓ duck, ⟳ roll. Trains carry
+   * nothing, since the answer to a train is a lane change and an arrow on it would be a lie. The glyph
+   * fades in at the far end of its runway and pulses once it is aimed at you, so the information sits
+   * where the eyes already are; the colour flips to brand gold on the same beat.
+   */
+  private paintSignal(
+    ctx: CanvasRenderingContext2D,
+    o: Obstacle,
+    cxN: number,
+    yN0: number,
+    yN1: number,
+    scale: number,
+    gapPx: number,
+  ): void {
+    const shape = shapeFor(o.kind.signal);
+    const fade = o.meters > 0.4 ? signalAlpha(o.meters) : 0;
+    if (!shape || fade <= 0.02 || o.hit) return;
+
+    const urgent = o.threatened;
+    const size = Math.min(40, Math.max(8, 30 * scale)) * (urgent ? 1 + 0.09 * Math.sin(this.pulse * 9) : 1);
+    // A jump asks to be read above the block, pointing up out of it; a duck asks to sit in the gap you
+    // slide through, pointing down into it; a roll (nothing in v1 asks for one) centres on the body.
+    const overhead = o.kind.vertical === "overhead";
+    const cy = overhead
+      ? shape === "down"
+        ? yN0 + Math.max(size * 0.55, gapPx * 0.45)
+        : (yN0 + yN1) / 2
+      : shape === "up"
+        ? yN1 - size * 0.62
+        : (yN0 + yN1) / 2;
+    const lines =
+      shape === "spin"
+        ? spinArrow(cxN, cy, size)
+        : chevrons(shape === "up" ? -1 : 1, cxN, cy, size, urgent ? 3 : 2);
+
+    const box = plate(cxN, cy, size * 1.5, size * 1.25);
+    ctx.globalAlpha = fade * 0.5;
+    ctx.fillStyle = PLATE_COLOUR;
+    ctx.beginPath();
+    ctx.moveTo(box[0]![0], box[0]![1]);
+    for (const pt of box.slice(1)) ctx.lineTo(pt[0], pt[1]);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.globalAlpha = fade;
+    ctx.strokeStyle = urgent ? color("gold") : color("white");
+    ctx.lineWidth = Math.max(1.6, size * 0.16);
+    for (const line of lines) {
+      ctx.beginPath();
+      ctx.moveTo(line[0]![0], line[0]![1]);
+      for (const pt of line.slice(1)) ctx.lineTo(pt[0], pt[1]);
+      ctx.stroke();
+    }
   }
 
   private paintCoin(ctx: CanvasRenderingContext2D, track: TrackView, coin: Coin, _view: RunView): void {
