@@ -18,6 +18,10 @@ from .util import Part, load_rgba, read_json, write_json
 # stroke thresholds behave identically for a 600px upload and a 6000px upload.
 ANALYSIS_HEIGHT = 1600.0
 
+#: Where the ground contact sits inside a cell. Generated pose cells are placed on the *same*
+#: line, which is the only reason the two sources can share one sheet.
+ANCHOR_Y = 0.955
+
 
 @dataclass
 class HeroBake:
@@ -64,7 +68,7 @@ def load_rig(
     size = int(round(cell * supersample * headroom))
     char_h_frac = 0.88
     k = size * char_h_frac / char_h_px
-    stage = Stage(size=size, cell=cell, k=k, ground=(gx, gy), anchor_y=0.955)
+    stage = Stage(size=size, cell=cell, k=k, ground=(gx, gy), anchor_y=ANCHOR_Y)
 
     canvas, _ = scaled_canvas(img, sil.fg, k)
     # The silhouette mapped exactly like a rig part, so the rest pose can be
@@ -174,19 +178,40 @@ def write_sheet(sheet: np.ndarray, out_dir: str, base: str, quality: int = 96) -
     }
 
 
-def bake(source_path: str, rig_cfg_path: str, out_dir: str, cell: int = 384, keep_png: bool = False) -> HeroBake:
+def bake(
+    source_path: str,
+    rig_cfg_path: str,
+    out_dir: str,
+    cell: int = 384,
+    keep_png: bool = False,
+    frame_overrides: dict[str, list[np.ndarray]] | None = None,
+    override_meta: dict[str, dict] | None = None,
+) -> HeroBake:
+    """Bake the hero sheet.
+
+    ``frame_overrides`` replaces whole states with pre-rendered cells (see ``genframes``) —
+    normally the generated key poses for run/jump/fall/slide/land. Anything not overridden is
+    animated from the rig, and both paths land in the same cell size on the same anchor, which is
+    why nothing downstream has to know the difference.
+    """
     os.makedirs(out_dir, exist_ok=True)
     rig_cfg = read_json(rig_cfg_path)
     img = load_rgba(source_path)[..., :3].copy()
     rig, parts_debug, stage, expected_rest = load_rig(img, rig_cfg, cell)
 
     state_frames = {name: bake_state(rig, STATES[name]) for name in SHEET_ORDER}
+    overrides = {k: v for k, v in (frame_overrides or {}).items() if k in state_frames}
+    state_frames.update(overrides)
     sheet, layout, rows = pack_sheet(state_frames, stage.cell, cols=8)
     for name in layout:
-        layout[name]["fps"] = STATES[name]["fps"]
-        layout[name]["loop"] = bool(STATES[name].get("loop", False))
-        if STATES[name].get("hold") is not None:
-            layout[name]["hold"] = int(STATES[name]["hold"])
+        spec = (override_meta or {}).get(name) if name in overrides else None
+        spec = spec or STATES[name]
+        fps = float(spec["fps"])
+        layout[name]["fps"] = int(fps) if fps.is_integer() else fps
+        layout[name]["loop"] = bool(spec.get("loop", False))
+        if spec.get("hold") is not None:
+            layout[name]["hold"] = int(spec["hold"])
+        layout[name]["source"] = "generated" if name in overrides else "rig"
 
     formats = write_sheet(sheet, out_dir, "dilirun-hero-sheet")
     png_path = os.path.join(out_dir, "dilirun-hero-sheet.png")

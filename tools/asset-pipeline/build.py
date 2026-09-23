@@ -30,7 +30,7 @@ from PIL import Image
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from dilirun_assets import brand, qa, spritesheet  # noqa: E402
+from dilirun_assets import brand, genframes, qa, spritesheet  # noqa: E402
 from dilirun_assets.util import contact_sheet, load_rgba, save_rgba, upscale_preview  # noqa: E402
 
 REPO = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -38,6 +38,8 @@ PATHS = {
     "character_src": os.path.join(REPO, "assets", "source", "hero_source.png"),
     "logo_src": os.path.join(REPO, "assets", "source", "dliicom_logo.png"),
     "rig_cfg": os.path.join(REPO, "tools", "asset-pipeline", "config", "rig.json"),
+    "frames_cfg": os.path.join(REPO, "tools", "asset-pipeline", "config", "frames.json"),
+    "generated": os.path.join(REPO, "assets", "source", "generated"),
     "theme": os.path.join(REPO, "src", "game", "data", "theme.json"),
     "sprites": os.path.join(REPO, "public", "assets", "sprites"),
     "ui": os.path.join(REPO, "public", "assets", "ui"),
@@ -77,6 +79,89 @@ def copy_sources(character: str, logo: str, max_width: int = 1400, quantize_to: 
         lg = lg.resize((900, int(lg.height * 900 / lg.width)), Image.LANCZOS)
     lg.save(PATHS["logo_src"], optimize=True)
     print(f"sources copied -> {PATHS['character_src']} ({img.width}x{img.height}), {PATHS['logo_src']} ({lg.width}x{lg.height})")
+
+
+def _extract_state(rgb: np.ndarray, name: str, spec: dict, cfg: dict, cell: int) -> tuple[list, np.ndarray, dict]:
+    """Cells, the diagnostic mask and raw sizes for one part of one state."""
+    return genframes.extract(
+        rgb,
+        genframes.CellSpec(
+            state=name,
+            image=spec.get("image", ""),
+            fps=float(spec["fps"]),
+            loop=bool(spec.get("loop", False)),
+            hold=spec.get("hold"),
+            cells=tuple(spec["cells"]) if spec.get("cells") else None,
+            expect=spec.get("expect"),
+            clip=tuple(spec["clip"]) if spec.get("clip") else None,
+        ),
+        cell=cell,
+        figure_height=float(spec.get("figureHeight", cfg.get("figureHeight", 0.82))),
+        anchor_y=spritesheet.ANCHOR_Y,
+        green_margin=float(cfg.get("greenMargin", 8.0)),
+        line_fill=float(cfg.get("lineFill", 0.75)),
+        min_area=int(cfg.get("minArea", 900)),
+    )
+
+
+def frame_overrides(cfg_path: str, cell: int, debug_dir: str) -> tuple[dict, dict, dict]:
+    """Pre-rendered cells for the states that need real key poses, plus their timing metadata.
+
+    The rig can only rotate a limb about its hinge; a run cycle needs a bending knee, a contact
+    frame and a pass frame. Those states come from generated artwork instead (see
+    ``dilirun_assets/genframes.py``), keyed, split and normalised into the same cells the rig emits.
+    Every other state stays animated from the uploaded illustration. A state may be assembled from
+    several sheets (``parts``), which is how a 6-frame cycle is authored as two 3-pose rows.
+    """
+    cfg = json.load(open(cfg_path, encoding="utf-8"))
+    frames: dict[str, list] = {}
+    meta: dict[str, dict] = {}
+    stats: dict[str, dict] = {}
+    if not cfg.get("states"):
+        return frames, meta, stats
+    root = os.path.join(REPO, cfg.get("dir", "assets/source/generated"))
+    if not os.path.isdir(root):
+        raise SystemExit(f"frames.json asks for generated poses but {root} does not exist")
+    for name, spec in cfg["states"].items():
+        parts = spec["parts"] if spec.get("parts") else [spec]
+        cells: list = []
+        heights: list[int] = []
+        widths: list[int] = []
+        clipped: list[int] = []
+        healed: tuple[int, ...] = ()
+        for n, part in enumerate(parts):
+            path = os.path.join(root, part["image"])
+            if not os.path.exists(path):
+                raise SystemExit(
+                    f"generated pose sheet missing for state '{name}': {path}\n"
+                    "Either restore it (docs/ASSETS.md \u00a78 says how these are made) or drop that state "
+                    "from config/frames.json to fall back to the rig."
+                )
+            merged = {**spec, **part}
+            sub_cells, mask, raw = _extract_state(load_rgba(path)[..., :3].copy(), name, merged, cfg, cell)
+            cells.extend(sub_cells)
+            heights += raw["figure_heights"]
+            widths += raw["figure_widths"]
+            clipped += raw.get("clipped", [])
+            healed += (raw.get("healed_rows", 0), raw.get("healed_cols", 0))
+            if len(parts) > 1:
+                cv2.imwrite(os.path.join(debug_dir, f"mask-{name}-{n}.png"), mask)
+        frames[name] = cells
+        meta[name] = {
+            "fps": float(spec["fps"]),
+            "loop": bool(spec.get("loop", False)),
+            "hold": spec.get("hold"),
+        }
+        st = genframes.cell_stats(cells)
+        # Measured on the *raw* bboxes: once a figure is normalised into a cell every frame is the
+        # same height by construction, so only the pre-scale numbers can reveal a clipped pose.
+        st["raw_spread"] = (max(heights) / max(1, min(heights))) if heights else 1.0
+        st["width_spread"] = (max(widths) / max(1, min(widths))) if widths else 1.0
+        st["healed"] = sum(healed)
+        st["clipped"] = len(clipped)
+        st["consistency"] = bool(spec.get("consistency", True))
+        stats[name] = st
+    return frames, meta, stats
 
 
 def write_debug(bake: spritesheet.HeroBake, out_dir: str, docs_preview: str) -> None:
@@ -153,6 +238,8 @@ def main() -> int:
     ap.add_argument("--quantize", type=int, default=0, metavar="COLORS", help="palette-quantise the stored hero master (e.g. 256) to shrink the repo")
     ap.add_argument("--debug", action="store_true", help="also write contact sheets + docs GIF")
     ap.add_argument("--min-iou", type=float, default=0.96, help="fail the build if the rest pose drifts from the source art")
+    ap.add_argument("--frames-config", default=PATHS["frames_cfg"], help="JSON describing generated key-pose sheets")
+    ap.add_argument("--no-frames", action="store_true", help="rig-only build: ignore config/frames.json")
     args = ap.parse_args()
 
     if args.copy_sources:
@@ -162,8 +249,56 @@ def main() -> int:
     character = args.character if os.path.isabs(args.character) else os.path.join(REPO, args.character)
     logo = args.logo if os.path.isabs(args.logo) else os.path.join(REPO, args.logo)
 
+    overrides: dict[str, list] = {}
+    override_meta: dict[str, dict] = {}
+    if not args.no_frames and os.path.exists(args.frames_config):
+        print(":: generated key poses")
+        overrides, override_meta, stats = frame_overrides(args.frames_config, args.cell, PATHS["debug"])
+        os.makedirs(PATHS["debug"], exist_ok=True)
+        strip_rows = []
+        for name, cells in overrides.items():
+            s = stats[name]
+            print(
+                f"   {name:6s} {len(cells)} cells  coverage {s['coverage']:.2f}  "
+                f"raw height spread {s['raw_spread']:.2f}  width spread {s['width_spread']:.2f}  "
+                f"clipped {s['clipped']}  "
+                f"lines healed {s['healed']}"
+            )
+            strip_rows.append(genframes.review_strip(cells, args.cell))
+            # Coverage catches the two silent failures: a cell that is mostly empty (the figure was
+            # eaten by the key or clipped by a grid line) and a cell that overflows (wrong scale).
+            if not (0.08 <= s["coverage"] <= 0.85):
+                print(f"   FAIL: '{name}' covers {s['coverage']:.2f} of each cell \u2014 the key is eating the art or the pose is clipped. See {PATHS['debug']}/mask-{name}.png", file=sys.stderr)
+                return 1
+            # Height consistency only makes sense for states that must not change silhouette; a slide
+            # or a landing is *supposed* to get shorter, so those opt out via frames.json.
+            # A figure touching the crop edge lost a limb to the sheet's own frame; that is a real
+            # defect. A plain size difference between poses is not, because normalisation equalises it.
+            if s["clipped"]:
+                print(
+                    f"   FAIL: '{name}' has {s['clipped']} figure(s) touching the crop edge \u2014 the sheet "
+                    "clips a pose, or two poses are close enough that grouping swallowed one",
+                    file=sys.stderr,
+                )
+                return 1
+            if s.get("consistency", True) and s["raw_spread"] > 2.2:
+                print(f"   FAIL: '{name}' figures differ in height by {s['raw_spread']:.2f}x before normalisation \u2014 a pose is clipped or the sheet is inconsistent", file=sys.stderr)
+                return 1
+        if strip_rows:
+            wide = max(r.shape[1] for r in strip_rows)
+            tall = sum(r.shape[0] for r in strip_rows) + 8 * (len(strip_rows) - 1)
+            canvas = np.zeros((tall, wide, 4), np.uint8)
+            y0 = 0
+            for r in strip_rows:
+                canvas[y0 : y0 + r.shape[0], : r.shape[1]] = r
+                y0 += r.shape[0] + 8
+            save_rgba(canvas, os.path.join(PATHS["debug"], "frames-raw.png"), optimize=True)
+
     print(":: hero rig -> sprite sheet")
-    bake = spritesheet.bake(character, PATHS["rig_cfg"], PATHS["sprites"], cell=args.cell)
+    bake = spritesheet.bake(
+        character, PATHS["rig_cfg"], PATHS["sprites"], cell=args.cell,
+        frame_overrides=overrides or None, override_meta=override_meta or None,
+    )
     print(f"   sheet {bake.sheet.shape[1]}x{bake.sheet.shape[0]} px, "
           f"{bake.manifest['frameCount']} frames, {len(bake.manifest['states'])} states")
 

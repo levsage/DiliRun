@@ -1,0 +1,81 @@
+{
+  "$comment": "Generated key poses that replace rig animation for the states the player actually stares at. Each image is a flattened pose sheet on a single background colour: figures are found by flooding the background in from the border (not a fixed grid, and not a flat colour key: these sheets carry wide tinted bands), scaled to a common height and dropped on the rig's ground anchor, so the baked sheet and the manifest are identical in shape to a rig-only build. States absent here stay rig-animated from the uploaded illustration. `cells` picks figures in reading order (row by row, left to right); `expect` fails the build if the sheet does not contain exactly that many figures. Design notes: docs/ASSETS.md \u00a78.",
+  "dir": "assets/source/generated",
+  "lineFill": 0.75,
+  "minArea": 900,
+  "figureHeight": 0.82,
+  "states": {
+    "run": {
+      "fps": 16,
+      "loop": true,
+      "hold": null,
+      "figureHeight": 0.86,
+      "parts": [
+        {
+          "image": "gen-run.png",
+          "expect": 3,
+          "clip": [
+            0.0,
+            0.0,
+            1.0,
+            0.5
+          ]
+        },
+        {
+          "image": "gen-run.png",
+          "expect": 3,
+          "clip": [
+            0.0,
+            0.5,
+            1.0,
+            1.0
+          ]
+        }
+      ]
+    },
+    "jump": {
+      "image": "gen-air.png",
+      "cells": [
+        0,
+        1
+      ],
+      "fps": 14,
+      "loop": false,
+      "hold": 1,
+      "figureHeight": 0.84,
+      "expect": 4
+    },
+    "fall": {
+      "image": "gen-air.png",
+      "cells": [
+        2,
+        3
+      ],
+      "fps": 10,
+      "loop": true,
+      "hold": 1,
+      "figureHeight": 0.84,
+      "expect": 4
+    },
+    "slide": {
+      "image": "gen-slide.png",
+      "fps": 18,
+      "loop": false,
+      "hold": 1,
+      "figureHeight": 0.92,
+      "consistency": false,
+      "expect": 3
+    },
+    "land": {
+      "image": "gen-land.png",
+      "fps": 16,
+      "loop": false,
+      "hold": 2,
+      "figureHeight": 0.86,
+      "consistency": false,
+      "expect": 3
+    }
+  },
+  "greenMargin": 8,
+  "groupGap": 0.05
+}

@@ -117,3 +117,63 @@ npm run dev -- --open "/?lab=1"   # then watch it move
 frame with `*`, because "which frame does this state park on?" is the question a one-shot animation
 lives or dies by. If a pose looks right in a contact sheet and wrong in an inspect strip, it is
 wrong — the strip is what ships.
+
+## 8. Generated key poses (the four states in view)
+
+The rig is honest work for a pose that holds, but it could not sell a sprint: two passes of limb angles
+still read as a mannequin sliding on a treadmill. So the four states a player actually watches — `run`,
+`jump`, `fall`, `slide`, `land` — are **drawn key poses, generated from the uploaded mascot**, and the
+rig keeps the states nobody inspects frame by frame (`idle`, `dash`, `roll`, `stumble`, `victory`, plus
+the `start`/`hurt`/`coin`/`menu` aliases).
+
+| State   | Frames | Where they come from                                              |
+| ------- | -----: | ----------------------------------------------------------------- |
+| `run`   |      6 | `gen-run.png`, a 3×2 grid: contact → down → pass → mid → contact′ |
+| `jump`  |      2 | `gen-air.png` cells 0–1 (take-off, tuck)                          |
+| `fall`  |      2 | `gen-air.png` cells 2–3 (extend, reach for ground)                |
+| `slide` |      3 | `gen-slide.png`, one row, held on the last                        |
+| `land`  |      3 | `gen-land.png`, one row, held two frames                          |
+
+The four sheets in `assets/source/generated/` are **committed inputs**, not scratch: they were painted on
+a flat green screen against `images: uploads/…mascot.png` so the helmet, face, suit colours and cape are
+the same character the rest of the repo was built from. `npm run assets` re-derives the sheet from them
+byte-for-byte (only `generatedAt` moves), so a rebuild in CI produces the same art without a network call
+and without an image model in the loop.
+
+### How a sheet becomes frames
+
+`tools/asset-pipeline/dilirun_assets/genframes.py`, configured by `config/frames.json`:
+
+1. **Key by flooding, not by colour.** A flat green screen is not one colour — compression leaves bands
+   of subtly different green — so `foreground_mask` floods in from the border and then fills enclosed
+   pockets. A straight chroma key eats the highlights of the art.
+2. **Heal the separator bars.** The generator draws dark grid lines between cells. Deleting them cuts
+   every figure in half and leaves a bar where the line crossed artwork, so `repair_lines` copies the
+   nearest non-line neighbour into each line row/column, per pixel. Averaging the two sides of a bar
+   paints a pale stripe through a limb; copying does not.
+3. **Let the authored count cluster the pieces.** Grouping torn limbs by a proximity threshold is a dead
+   end (6 px splits a figure, 14 px fuses two neighbours and drops a frame). Instead `expect` — the frame
+   count in `frames.json` — drives `cluster_by_gaps`, which cuts the widest centre-to-centre gaps. That is
+   scale-free, and it works across grid rows because a figure and the one under it share an x.
+4. **`clip` and `cells` handle the grids.** `gen-run.png` is read as two rows of three, `gen-air.png` as
+   four cells of which two pairs are used.
+5. **`figureHeight` normalises scale.** Generated cells vary in how much of the frame the figure fills;
+   each state scales to a fraction of the cell (`run` 0.86, `land` 0.84) so the feet meet `ANCHOR_Y` and
+   the silhouette does not pump up and down between poses.
+
+### Gates that fail the build
+
+- a state whose detected cell count is not its `expect`;
+- any figure touching an image edge (`clipped > 0`) — that is a crop, not a pose;
+- coverage outside 0.08–0.85 of the cell, or a raw height spread above 2.2.
+
+Height spread has a wide tolerance on purpose: normalising by design makes the raw numbers differ, and a
+tight gate here once failed a sheet that looked perfect. `build.py` prints
+`coverage / raw height spread / width spread / clipped / lines healed` for every state.
+
+### The one review that counts
+
+`npm run assets:inspect -- --states run` composites each frame at **real sprite size on the track
+colour**. A pose that looks good on a contact sheet and wrong there is wrong. That is how a regenerated
+`run` sheet got rejected — the helmet faces had turned into brains and the middle pose was standing — and
+how the pale limb stripe from the averaging version of `repair_lines` was caught.
