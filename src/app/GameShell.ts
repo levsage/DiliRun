@@ -10,6 +10,7 @@ import { Store } from "../core/Storage";
 import { InputController } from "../core/Input";
 import { Emitter } from "../core/Emitter";
 import { Leaderboard } from "../game/records";
+import { Profile } from "../game/profile";
 import { RunAccumulator } from "../game/scoring";
 import { Stage } from "../render/Stage";
 import { applyThemeCss, color } from "../render/Theme";
@@ -22,9 +23,10 @@ import { ScoreBoard } from "../ui/hud/ScoreBoard";
 import { LeaderboardPanel, toRows } from "../ui/hud/LeaderboardPanel";
 import { Lives } from "../ui/hud/Lives";
 import { RunSummary } from "../ui/hud/RunSummary";
+import { HomePanel, type HomeLabels } from "../ui/hud/HomePanel";
 import type { RunRecord } from "../game/records";
 import { compareRuns, type RunSnapshot } from "../game/scoring";
-import { t } from "../game/strings";
+import { formatValue, getLocale, setLocale, t } from "../game/strings";
 import { RunWorld, type RunEvent } from "../game/systems/RunWorld";
 
 export interface ShellElements {
@@ -42,11 +44,12 @@ export interface ShellEvents extends Record<string, unknown> {
 }
 
 /**
- * Which scene owns the canvas. `attract` is the menu (the hero running, no hazards);
- * `run` is a live `RunWorld`. Keeping both on one shell means one loop, one HUD and one
- * asset preload — the modes are cheap to switch and the menu is already the game renderer.
+ * Which scene owns the canvas. `home` is the stage the run starts and ends on — the hero running in the
+ * attract world with the name field and the Runner Board laid over it; `run` is a live `RunWorld`.
+ * Keeping both on one shell means one loop, one HUD and one asset preload, and the home stage is already
+ * the game renderer behind a card, so it costs nothing to look like part of the game.
  */
-export type ShellMode = "attract" | "run";
+export type ShellMode = "home" | "run";
 
 export class GameShell {
   readonly events = new Emitter<ShellEvents>();
@@ -63,8 +66,10 @@ export class GameShell {
   private panel!: LeaderboardPanel;
   private lives!: Lives;
   private summary!: RunSummary;
+  private home!: HomePanel;
+  readonly profile!: Profile;
   readonly world: RunWorld;
-  mode: ShellMode = "attract";
+  mode: ShellMode = "home";
   private lastRecord: RunRecord | null = null;
   readonly input = new InputController();
   private resized = (): void => this.onResize();
@@ -80,6 +85,11 @@ export class GameShell {
     applyThemeCss();
     this.store = new Store({ prefix: "dilirun", version: 1 });
     this.leaderboard = new Leaderboard(this.store);
+    this.profile = new Profile(this.store);
+    // The saved language is applied before any label is read, which happens in mount() — so the whole
+    // HUD comes up in the player's locale instead of flickering from English.
+    const saved = this.profile.locale;
+    if (saved) setLocale(saved);
     this.world = new RunWorld({
       seed: (Date.now() ^ (Math.random() * 0xffffffff)) >>> 0,
       take: (action) => this.input.take(action),
@@ -92,14 +102,36 @@ export class GameShell {
     root.dataset.dilirun = "1";
     root.style.setProperty("--dili-coin-sheet", `url("${this.assets.url("assets/sprites/coin-sheet.png")}")`);
     this.stage = new Stage(canvas, { width: 480, height: 800, maxDpr: 2.5 });
-    this.coinBar = new CoinBar().mount(hud);
-    this.board = new ScoreBoard().mount(hud);
+    this.coinBar = new CoinBar({ label: t("currency.name") }).mount(hud);
+    this.board = new ScoreBoard({
+      score: t("hud.score"),
+      distance: t("hud.distance"),
+      best: t("hud.best"),
+    }).mount(hud);
     this.lives = new Lives({ total: this.world.view().maxLives, label: t("hud.lives") }).mount(hud);
-    this.panel = new LeaderboardPanel({ title: t("leaderboard.title") }).mount(hud);
+    this.panel = new LeaderboardPanel({
+      title: t("leaderboard.title"),
+      empty: t("label.empty"),
+      you: t("label.you"),
+      unnamed: t("label.unnamed"),
+    }).mount(hud);
+    this.home = new HomePanel(this.homeLabels(), {
+      onPlay: () => this.startRun(),
+      onName: (raw) => {
+        this.profile.setName(raw);
+        this.home.name = this.profile.name;
+        this.refreshBoard();
+      },
+      onLanguage: () => this.toggleLocale(),
+      onReset: () => {
+        this.leaderboard.reset();
+        this.refreshBoard();
+      },
+    }).mount(hud);
     this.summary = new RunSummary({
       onPrimary: () =>
         this.mode === "run" && this.world.phase === "over" ? this.startRun() : this.togglePause(),
-      onSecondary: () => this.toMenu(),
+      onSecondary: () => this.goHome(),
     }).mount(hud);
     this.scene = new AttractScene({
       stage: this.stage,
@@ -125,13 +157,14 @@ export class GameShell {
       caption: t("brand.city"),
     });
     this.loop.start();
-    this.showMenu();
+    document.documentElement.lang = getLocale();
+    this.showHome();
     window.addEventListener("resize", this.resized);
     window.addEventListener("orientationchange", this.resized);
     document.addEventListener("visibilitychange", this.visibility);
     this.input.attach(window);
     this.input.onChange = (action) => this.onAction(action);
-    this.refreshLeaderboard(null);
+    this.refreshBoard();
     this.events.emit("ready", undefined);
   }
 
@@ -141,13 +174,61 @@ export class GameShell {
       else if (this.loop.paused) this.togglePause();
       return;
     }
-    if (this.mode === "attract") {
-      // Any action from the menu starts a run; the hero still gets to jump in the background.
+    if (this.mode === "home") {
+      // Typing a name is not an intent to run, and the home card has its own Run button.
+      if (this.home.isTyping) return;
       if (action === "jump" || action === "slide") this.startRun();
       else this.scene.forceJump();
       return;
     }
     if (this.world.phase === "over" && (action === "jump" || action === "slide")) this.startRun();
+  }
+
+  /** All the words on the home card, in the current locale. One function, so switching is one call. */
+  private homeLabels(): HomeLabels {
+    return {
+      kicker: t("brand.city"),
+      title: t("game.title"),
+      tagline: t("game.tagline"),
+      play: t("home.play"),
+      nameLabel: t("home.name"),
+      nameSave: t("home.nameSave"),
+      nameHint: t("home.nameHint"),
+      best: t("home.best"),
+      distance: t("home.distance"),
+      runs: t("home.runs"),
+      bank: t("home.bank"),
+      language: t("home.language"),
+      reset: t("home.reset"),
+      resetSure: t("home.resetSure"),
+      controls: t("run.hint"),
+      saved: t("home.saved"),
+    };
+  }
+
+  /** Every label the shell owns, rebuilt from the bundle — the only way a locale swap looks instant. */
+  private refreshLabels(): void {
+    this.home.setLabels(this.homeLabels());
+    this.board.setLabels({ score: t("hud.score"), distance: t("hud.distance"), best: t("hud.best") });
+    this.lives.setLabel(t("hud.lives"));
+    this.coinBar.setLabel(t("currency.name"));
+    this.panel.setLabels({
+      title: t("leaderboard.title"),
+      empty: t("label.empty"),
+      you: t("label.you"),
+      unnamed: t("label.unnamed"),
+    });
+    document.documentElement.lang = getLocale();
+  }
+
+  private toggleLocale(): void {
+    const all = ["en", "bn"];
+    const next = all[(all.indexOf(getLocale()) + 1) % all.length] ?? "en";
+    if (!setLocale(next)) return;
+    this.profile.setLocale(next);
+    this.refreshLabels();
+    this.refreshBoard();
+    if (this.mode === "run") this.lives.update(this.world.view().lives);
   }
 
   /** The world's event stream is the only place the shell learns about a run. */
@@ -168,6 +249,7 @@ export class GameShell {
   startRun(): void {
     this.mode = "run";
     this.lastRecord = null;
+    this.home.hide();
     this.world.start();
     this.lives.reset();
     this.summary.hide();
@@ -177,23 +259,34 @@ export class GameShell {
     this.events.emit("mode:change", { mode: "run" });
   }
 
-  showMenu(): void {
-    this.mode = "attract";
-    this.els.root.dataset.mode = "attract";
-    this.summary.show({
-      tone: "ready",
-      kicker: t("game.tagline"),
-      title: t("game.title"),
-      note: t("run.hint"),
-      primaryLabel: t("run.ready"),
-    });
-    this.events.emit("mode:change", { mode: "attract" });
+  /** The stage the run starts and ends on: attract scene running behind a card, no hazards. */
+  showHome(): void {
+    this.mode = "home";
+    this.els.root.dataset.mode = "home";
+    this.summary.hide();
+    this.home.name = this.profile.name;
+    this.home.show();
+    this.refreshBoard();
+    this.events.emit("mode:change", { mode: "home" });
   }
 
-  toMenu(): void {
+  goHome(): void {
     this.loop.paused = false;
     this.els.root.classList.remove("is-paused");
-    this.showMenu();
+    this.showHome();
+  }
+
+  /** The board and the four numbers on the home card, from the records layer. */
+  private refreshBoard(): void {
+    const summary = this.leaderboard.summary();
+    const best = summary.best;
+    this.home.setStats({
+      best: best ? formatValue(best.score) : "—",
+      distance: best ? formatValue(best.meters) : "—",
+      runs: formatValue(summary.runs),
+      bank: formatValue(summary.coinsBank),
+    });
+    this.panel.render(toRows(this.leaderboard.top(), this.lastRecord?.id ?? null));
   }
 
   private togglePause(): void {
@@ -205,8 +298,9 @@ export class GameShell {
       this.summary.show({
         tone: "paused",
         title: t("run.paused"),
+        note: t("run.hint"),
         primaryLabel: t("run.resume"),
-        secondaryLabel: t("over.board"),
+        secondaryLabel: t("over.home"),
       });
     } else {
       this.summary.hide();
@@ -216,7 +310,9 @@ export class GameShell {
   /** Bank the coins, write the record, show the receipt. Everything the design doc promises. */
   private onRunOver(snapshot: RunSnapshot): void {
     const previous = this.leaderboard.best();
-    const { record, rank } = this.leaderboard.submit(snapshot, ["solo"]);
+    // The name is stamped in here rather than looked up when the board renders, so renaming yourself
+    // later cannot rewrite history.
+    const { record, rank } = this.leaderboard.submit(snapshot, ["solo"], this.profile.name || undefined);
     const isBest = !previous || compareRuns(record, previous) < 0;
     this.lastRecord = record;
     this.runScene.setCelebration(isBest);
@@ -234,8 +330,9 @@ export class GameShell {
       lines,
       note: t("over.coins", { coins: record.coins, currency: t("currency.name") }),
       primaryLabel: t("over.again"),
-      secondaryLabel: t("over.board"),
+      secondaryLabel: t("over.home"),
     });
+    this.home.name = this.profile.name;
     this.events.emit("run:over", { record: isBest ? record : null, rank });
   }
 
@@ -280,6 +377,7 @@ export class GameShell {
     return this.els.hud;
   }
 
+  /** Kept as the seam the pose lab and any future screen use; the home card goes through refreshBoard. */
   refreshLeaderboard(highlightId: string | null): void {
     this.panel.render(toRows(this.leaderboard.top(), highlightId));
   }
@@ -290,11 +388,12 @@ export class GameShell {
 
   private onVisibility(): void {
     if (document.hidden) this.loop.paused = true;
-    else if (this.mode === "attract") this.loop.paused = false;
+    else if (this.mode === "home") this.loop.paused = false;
   }
 
   dispose(): void {
     this.loop?.stop();
+    this.home?.dispose();
     window.removeEventListener("resize", this.resized);
     window.removeEventListener("orientationchange", this.resized);
     document.removeEventListener("visibilitychange", this.visibility);

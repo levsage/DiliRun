@@ -9,10 +9,17 @@ score multiplier. Bright, cartoon, fast, forgiving. Never grimdark.
 ## 2. Session loop
 
 ```
-Title → Run (start) → [dodge / collect / combo] → Crash or 3rd stumble → Run summary
-   ↑                                                                              ↓
-   └───────────────────── Leaderboard shows your rank, tap Run ───────────────────┘
+Home (name · board · Run) → Run (start) → [dodge / collect / combo] → Crash or 3rd stumble → Receipt
+   ↑                                                                                        ↓
+   └────────────────────────── [Run again] loops straight back in; [Home] returns ──────────┘
 ```
+
+Home is a real stage, not a modal over a dead screen: the attract world keeps running behind the card,
+so the first thing a player sees is the hero already sprinting through Dliicom City. It carries the four
+numbers worth looking at twice (best score, best metres, runs, coin bank), the name that goes on the
+Runner Board, and one button. The run ends on a receipt with **[Run again]** and **[Home]** — the score
+is over there, and the identity is over here, so nothing about "who am I" ever sits in the middle of a
+run. Target: two taps from a cold page to running.
 
 Target first-run time: **under 3 seconds** from page load to running (no login, no tutorial wall).
 Target average run: **60–120 s**. One-hand playable on a phone.
@@ -68,8 +75,33 @@ Spawn rules (`systems/Spawner.ts`, tuning in `game/data/balance.json`):
   21 m/s is still readable. Also asserted.
 - Difficulty tiers by speed: T1 single obstacles → T2 two-lane blocks → T3 coin-line bait +
   `beamRow` → T4 double trains with a coin arc reward in the safe lane.
-- Coin patterns are placed **through the solution**, so the correct path is also the profitable path.
-  This is the core design trick of the genre and it is non-negotiable.
+- **Coins and hazards are on separate schedules.** A coin strip is emitted by its own frontier
+  (`coinGapMeters` + jitter + a speed term), never attached to an obstacle row, so coins keep arriving
+  while the blocks are taking a breath. Two safety rules survive the split, both asserted in
+  `Spawner.test.ts`: a strip is nudged out of any hazard's time window — **a coin never arrives at the
+  same moment as the block that is trying to kill you** — and it is only laid in a lane that is clear for
+  its whole length. A coin _inside_ a hazard is not a reward, it is a death with a sparkle on it.
+- A strip that would reach past ground the spawner has not stocked yet is **trimmed**, not dropped:
+  dropping made busy stretches turn into 100 m coin deserts, and "coins keep coming" is the promise.
+
+### 5.1 Action arrows
+
+Every hazard wears the shape of its own answer, painted on the face the player is looking at:
+
+| Signal | Glyph | Appears                 | Meaning                      |
+| ------ | ----- | ----------------------- | ---------------------------- |
+| `jump` | ↑↑    | above a ground block    | jump it                      |
+| `duck` | ↓↓    | in the gap under a beam | slide (or roll) under        |
+| `roll` | ⟳     | centred on the body     | barrel roll (nothing in v1)  |
+| `none` | —     | trains                  | change lane; do not trust it |
+
+The arrow is **derived from `clearWith`, never authored alongside it**: `Spawner.signalFor` collapses
+the stance list into the two shapes a player can read at 30 px, and a hazard that could be cleared
+_either_ way gets no glyph at all, because naming one of two answers is a half-truth painted where
+people look for the whole one. `tests/unit/signals.test.ts` pins both directions — signal implies
+answer, answer implies signal — and that a lone hazard with an arrow is actually solvable in its own lane.
+They fade in over the last 26 m and pulse in brand gold once the hazard is aimed at your lane, so the
+information is in the busy foreground and not in the distance.
 
 ## 6. Coins, scoring, combo
 
@@ -79,11 +111,19 @@ Spawn rules (`systems/Spawner.ts`, tuning in `game/data/balance.json`):
 - **Near miss** (passing an obstacle in the adjacent lane within a small x/y window): +40 m of score
   and keeps the combo alive. This rewards aggressive play over passive play.
 - Distance: 1 point per metre.
+- Coin cadence (data, not code): `coinGapMeters` 13 + up to 7 m jitter + `0.35 × (speed − 9)` metres
+  between strip starts, `coinSpacingMeters` 1.5 apart inside a strip, up to `coinsPerPattern` 5, opened
+  at `coinSafeStartMeters` 30 — 25 m before the first hazard, so the run starts with something to chase.
+  Measured over 3 km at 15 m/s that is a strip every ~26 m and no coin-free stretch over ~60 m.
 - Crash on the last life ends the run; a stumble (lives > 1) costs the combo, 0.5 s of invulnerability
   and a screen shake.
 - Final score = floor(metres × pointsPerMeter + coins × coinValue).
 
 ## 7. HUD spec (the three meta-systems from the brief)
+
+The Runner Board is a home-stage object: it lists rank, **who ran it**, score, metres, coins and age,
+and is hidden during a live run (`[data-mode="run"]`) where the only numbers that matter are the ones
+you are moving.
 
 ```
 ┌──────────────────────────────────────────────┐
@@ -110,9 +150,10 @@ Spawn rules (`systems/Spawner.ts`, tuning in `game/data/balance.json`):
 
 ## 8. Game over card
 
-Score (counting up), distance, coins, best combo, near misses, and **rank delta**
-("new #2 on this device"). Two actions: `Run again` (Space/tap) and `Leaderboard`. A run that beats
-the personal best shows a `PB` flag and reorders the panel behind the card.
+Score (counting up), distance, coins, best combo, near misses, and **rank** ("#2 on the Runner Board").
+Two actions: **[Run again]** (Space/tap, restarts in place) and **[Home]**. A run that beats the personal
+best celebrates the hero and reorders the board behind the card. The row it adds is stamped with the
+name from the profile _at that moment_, so renaming yourself afterwards cannot rewrite history.
 
 ## 9. Audio (M5)
 

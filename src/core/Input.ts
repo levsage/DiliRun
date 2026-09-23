@@ -18,6 +18,14 @@ export interface InputOptions {
   now?: () => number;
 }
 
+/** Controls that must keep their own keystrokes and taps away from the game. */
+const UI_SELECTOR = "input, textarea, select, button, a, label, [data-dili-ui]";
+
+function isUiTarget(target: EventTarget | null): boolean {
+  const el = target as (Element & { closest?: (s: string) => Element | null }) | null;
+  return typeof el?.closest === "function" && el.closest(UI_SELECTOR) !== null;
+}
+
 const KEY_MAP: Record<string, GameAction> = {
   ArrowLeft: "left",
   KeyA: "left",
@@ -86,6 +94,7 @@ export class InputController {
   }
 
   private onKey(event: KeyboardEvent): void {
+    if (isUiTarget(event.target)) return;
     const action = KEY_MAP[event.code];
     if (!action) return;
     if (action !== "pause") {
@@ -102,6 +111,12 @@ export class InputController {
   }
 
   private onPointerDown(event: PointerEvent): void {
+    // A tap on the HUD or the home card is a tap on a control, not a jump. Without this the language
+    // button would start a run, and a space typed into the name field would launch the hero.
+    if (isUiTarget(event.target)) {
+      this.pointer = null;
+      return;
+    }
     this.pointer = { x: event.clientX, y: event.clientY, id: event.pointerId };
   }
 

@@ -8,6 +8,24 @@ All notable changes to DiliRun are documented here. The format follows
 
 ### Added
 
+- **Playtest pass (owner feedback, 2026-09-23)** — four fixes to how the run reads: the hero animates from
+  drawn key poses, coins arrive on their own schedule, every hazard advertises its answer, and the game
+  opens and closes on a home stage.
+
+- **Home stage and identity (M6, early)** — `ShellMode` is now `home | run`: the menu is the attract
+  world with a card over it carrying the four numbers worth reading twice, the runner-name field and the
+  language toggle. `src/game/profile.ts` owns the name (trimmed, one line, ≤ 16 code points, combining
+  marks alone rejected) and the chosen locale, both versioned in `localStorage` and independent of the
+  records store, so "clear board" leaves the name alone. `RunRecord.name` is stamped at submit time, the
+  Runner Board shows it per row with a `You` chip and an `label.unnamed` fallback, and the receipt ends on
+  **[Run again]** / **[Home]**. The pause card offers **[Resume]** / **[Home]**. `InputController` now
+  ignores events whose target is a control, so a tap on the language button cannot start a run and a space
+  typed into a name cannot make the hero jump.
+- **Action arrows on hazards** — `src/render/Glyphs.ts` draws pure geometry (chevrons, a circular arrow,
+  an octagon plate) and `RunScene.paintSignal` puts ↑ on a jumpable block, ↓ in the gap under a beam and
+  nothing at all on a train, whose answer is a lane change. `Spawner.signalFor` derives the glyph from
+  `clearWith` and refuses to pick one when a hazard answers two ways; `tests/unit/signals.test.ts` pins
+  the promise in both directions and checks the geometry stays finite at every sprite size.
 - **Repository foundation (M0)** — layered TypeScript/Vite project, strict `tsconfig`, flat
   ESLint config, Prettier, Vitest, `.editorconfig`, issue/PR templates, CI (`ci.yml`) and
   GitHub Pages deploy (`pages.yml`) workflows, branch policy (`main` stable, `beta` integration).
@@ -33,10 +51,28 @@ All notable changes to DiliRun are documented here. The format follows
 - **Documentation** — `docs/PLAN.md`, `GAME_DESIGN.md`, `ARCHITECTURE.md`, `ASSETS.md`,
   `ROADMAP.md`, `DEPLOYING.md`, `CONTRIBUTING.md`.
 
-### In progress
+### Changed
 
-- **M4 — playable run**: lane state machine, obstacle spawner, collisions, lives, speed curve,
-  game over → leaderboard submit.
+- **Coins are an independent stream.** Obstacle rows no longer carry a
+  `coins` field; a `Spawner` frontier lays strips of 2–5 on its own cadence, pushed out of every hazard's
+  time window and trimmed rather than dropped when the horizon runs out. `data/obstacles.json` loses the
+  per-pattern `coins` key and gains a per-kind `signal`; `data/balance.json` gains `coinGapMeters`,
+  `coinGapJitterMeters`, `coinGapSpeedFactor`, `coinSafeStartMeters` and `coinClearanceMeters`.
+- **The four in-view states come from generated key poses** (`run 6, jump 2, fall 2, slide 3, land 3`);
+  the sheet is 3072×2304 with 47 frames and 10 states, and the rig still owns the rest. `rebuilds differ
+  only in generatedAt`.
+- **Locale coverage** — `data/strings.json` now ships a complete `bn` bundle (41 keys) and every HUD caption
+  reaches it: `ScoreBoard`, `CoinBar`, `Lives` and `LeaderboardPanel` take labels in and can relabel in
+  place, so switching language is instant rather than a reload. `run.ready` and `over.board` retired with
+  the card they belonged to.
+
+### Still open
+
+- **M5 — feel & polish**: hit-stop, screen shake, near-miss flashes and the pose pass are in; WebAudio SFX,
+  coin pickup FX and score pop-ups are not.
+- **M6 — screens**: the home stage, runner name, locale switcher and the receipt actions shipped early;
+  a settings sheet (sound and quality), a how-to card and the PWA install affordance are still to do.
+- **M7 — ship**: mobile pass, Lighthouse, README GIF, `beta` → `main`, tag and deploy.
 
 ## [0.1.0] — 2026-09-22
 
