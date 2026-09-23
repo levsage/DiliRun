@@ -37,9 +37,10 @@ describe("obstacle data", () => {
 });
 
 describe("Spawner — fairness rules", () => {
-  it("keeps the opening stretch empty", () => {
+  it("keeps the opening stretch empty, while coins may start earlier", () => {
     for (const row of simulate(7, 400)) {
-      expect(row.meters).toBeGreaterThanOrEqual(SPAWN_CONFIG.safeStartMeters - 0.001);
+      const floor = row.obstacles.length ? SPAWN_CONFIG.safeStartMeters : SPAWN_CONFIG.coinSafeStartMeters;
+      expect(row.meters, row.pattern).toBeGreaterThanOrEqual(floor - 0.001);
     }
   });
 
@@ -56,8 +57,12 @@ describe("Spawner — fairness rules", () => {
 
   it("gives a real breather between patterns and a readable combo inside one", () => {
     const spawner = new Spawner(5);
-    const rows: SpawnRow[] = [];
-    for (let m = 0; m < 3000; m += 2) rows.push(...spawner.fillUntil(m, 20));
+    // Only hazard rows carry the breather promise; coin strips interleave on purpose.
+    const rows = ((): SpawnRow[] => {
+      const out: SpawnRow[] = [];
+      for (let m = 0; m < 3000; m += 2) out.push(...spawner.fillUntil(m, 20));
+      return out.filter((r) => r.obstacles.length > 0);
+    })();
     const gap = spawner.gapFor(20);
     let worstBetween = Infinity;
     let worstWithin = Infinity;
@@ -74,18 +79,32 @@ describe("Spawner — fairness rules", () => {
     expect(worstWithin).toBeGreaterThanOrEqual(gap * 0.45);
   });
 
-  it("lays the coins through the lane you are allowed to be in", () => {
-    for (const row of simulate(3, 2000, 15)) {
-      if (!row.coins.length) continue;
-      const solvable = Spawner.solvableLanes(row.obstacles, SPAWN_CONFIG.laneCount);
-      for (const coin of row.coins) {
-        const blockedByOwnLane = row.obstacles.some(
-          (o) => o.lane === coin.lane && Math.abs(o.meters - coin.meters) < o.kind.lengthMeters * 0.8,
-        );
-        expect(blockedByOwnLane, `${row.pattern} coin sits inside a hazard`).toBe(false);
-        expect(solvable, `${row.pattern} coin lures you into an unsurvivable lane`).toContain(coin.lane);
-      }
+  it("never lets a coin arrive at the same moment as a block", () => {
+    const rows = simulate(3, 3000, 15);
+    const hazards = rows.flatMap((r) => r.obstacles);
+    const coins = rows.flatMap((r) => r.coins);
+    expect(coins.length, "coins should exist").toBeGreaterThan(40);
+    const clr = SPAWN_CONFIG.coinClearanceMeters;
+    for (const coin of coins) {
+      const overlap = hazards.find(
+        (o) => coin.meters >= o.meters - clr && coin.meters <= o.meters + o.kind.lengthMeters + clr,
+      );
+      expect(overlap, `coin at ${coin.meters.toFixed(1)} lands on a ${overlap?.kind.id}`).toBeUndefined();
     }
+  });
+
+  it("keeps coins flowing between the hazards", () => {
+    const rows = simulate(17, 3000, 15);
+    const starts = rows.filter((r) => r.coins.length).map((r) => r.meters);
+    expect(starts.length, "a coin strip every ~40 m over 3 km").toBeGreaterThan(60);
+    // The longest coin-free stretch is the thing that would make the run feel empty.
+    let worst = 0;
+    let previous = SPAWN_CONFIG.coinSafeStartMeters;
+    for (const at of starts) {
+      worst = Math.max(worst, at - previous);
+      previous = at;
+    }
+    expect(worst, "coins never stop for longer than a screen").toBeLessThan(70);
   });
 });
 

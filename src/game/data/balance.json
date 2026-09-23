@@ -42,10 +42,22 @@
   },
   "spawn": {
     "coinPatternWeights": [
-      ["line", 40],
-      ["arc", 25],
-      ["zigzag", 20],
-      ["cluster", 15]
+      [
+        "line",
+        40
+      ],
+      [
+        "arc",
+        25
+      ],
+      [
+        "zigzag",
+        20
+      ],
+      [
+        "cluster",
+        15
+      ]
     ],
     "safeStartMeters": 55,
     "minGapMeters": 14,
@@ -55,16 +67,34 @@
     "nearMissWindowMeters": 3.2,
     "coinSpacingMeters": 1.5,
     "coinsPerPattern": 5,
+    "coinGapMeters": 13,
+    "coinGapJitterMeters": 7,
+    "coinGapSpeedFactor": 0.35,
+    "coinSafeStartMeters": 30,
+    "coinClearanceMeters": 4,
     "tiers": [
-      { "maxSpeed": 11, "tier": 1 },
-      { "maxSpeed": 14, "tier": 2 },
-      { "maxSpeed": 17, "tier": 3 },
-      { "maxSpeed": 999, "tier": 4 }
+      {
+        "maxSpeed": 11,
+        "tier": 1
+      },
+      {
+        "maxSpeed": 14,
+        "tier": 2
+      },
+      {
+        "maxSpeed": 17,
+        "tier": 3
+      },
+      {
+        "maxSpeed": 999,
+        "tier": 4
+      }
     ]
   },
   "feel": {
     "hitStopSeconds": 0.11,
     "shakeOnCrash": 7,
     "coinPopScale": 1.22
-  }
+  },
+  "$note": "Coins and hazards are emitted on separate schedules; see docs/GAME_DESIGN.md §5."
 }
