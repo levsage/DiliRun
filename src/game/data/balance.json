@@ -42,22 +42,10 @@
   },
   "spawn": {
     "coinPatternWeights": [
-      [
-        "line",
-        40
-      ],
-      [
-        "arc",
-        25
-      ],
-      [
-        "zigzag",
-        20
-      ],
-      [
-        "cluster",
-        15
-      ]
+      ["line", 40],
+      ["arc", 25],
+      ["zigzag", 20],
+      ["cluster", 15]
     ],
     "safeStartMeters": 55,
     "minGapMeters": 14,

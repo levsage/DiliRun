@@ -14,31 +14,18 @@
         {
           "image": "gen-run.png",
           "expect": 3,
-          "clip": [
-            0.0,
-            0.0,
-            1.0,
-            0.5
-          ]
+          "clip": [0.0, 0.0, 1.0, 0.5]
         },
         {
           "image": "gen-run.png",
           "expect": 3,
-          "clip": [
-            0.0,
-            0.5,
-            1.0,
-            1.0
-          ]
+          "clip": [0.0, 0.5, 1.0, 1.0]
         }
       ]
     },
     "jump": {
       "image": "gen-air.png",
-      "cells": [
-        0,
-        1
-      ],
+      "cells": [0, 1],
       "fps": 14,
       "loop": false,
       "hold": 1,
@@ -47,10 +34,7 @@
     },
     "fall": {
       "image": "gen-air.png",
-      "cells": [
-        2,
-        3
-      ],
+      "cells": [2, 3],
       "fps": 10,
       "loop": true,
       "hold": 1,

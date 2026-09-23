@@ -8,9 +8,7 @@
       "lengthMeters": 0.9,
       "heightMeters": 0.9,
       "vertical": "ground",
-      "clearWith": [
-        "jump"
-      ],
+      "clearWith": ["jump"],
       "signal": "jump",
       "front": "navy",
       "top": "suit",
@@ -24,10 +22,7 @@
       "lengthMeters": 1.1,
       "heightMeters": 1.2,
       "vertical": "overhead",
-      "clearWith": [
-        "slide",
-        "roll"
-      ],
+      "clearWith": ["slide", "roll"],
       "signal": "duck",
       "front": "danger",
       "top": "white",
@@ -69,9 +64,7 @@
       "lengthMeters": 1.4,
       "heightMeters": 1.15,
       "vertical": "overhead",
-      "clearWith": [
-        "slide"
-      ],
+      "clearWith": ["slide"],
       "signal": "duck",
       "front": "goldDeep",
       "top": "gold",
@@ -82,97 +75,46 @@
   "patterns": [
     {
       "id": "single",
-      "tiers": [
-        1
-      ],
+      "tiers": [1],
       "rows": 1,
-      "obstacles": [
-        [
-          "barrierLow"
-        ]
-      ]
+      "obstacles": [["barrierLow"]]
     },
     {
       "id": "pair",
-      "tiers": [
-        2
-      ],
+      "tiers": [2],
       "rows": 1,
       "obstacles": [
-        [
-          "barrierLow",
-          "trainLow"
-        ],
-        [
-          "barrierHigh",
-          "barrierLow"
-        ],
-        [
-          "trainLow",
-          "barrierHigh"
-        ]
+        ["barrierLow", "trainLow"],
+        ["barrierHigh", "barrierLow"],
+        ["trainLow", "barrierHigh"]
       ]
     },
     {
       "id": "express",
-      "tiers": [
-        2,
-        3,
-        4
-      ],
+      "tiers": [2, 3, 4],
       "rows": 1,
-      "obstacles": [
-        [
-          "trainTall"
-        ]
-      ]
+      "obstacles": [["trainTall"]]
     },
     {
       "id": "gantry",
-      "tiers": [
-        3,
-        4
-      ],
+      "tiers": [3, 4],
       "rows": 1,
-      "obstacles": [
-        [
-          "beamRow"
-        ]
-      ]
+      "obstacles": [["beamRow"]]
     },
     {
       "id": "bait",
-      "tiers": [
-        3,
-        4
-      ],
+      "tiers": [3, 4],
       "rows": 1,
       "obstacles": [
-        [
-          "barrierLow",
-          "beamRow"
-        ],
-        [
-          "trainLow",
-          "barrierHigh"
-        ]
+        ["barrierLow", "beamRow"],
+        ["trainLow", "barrierHigh"]
       ]
     },
     {
       "id": "double",
-      "tiers": [
-        4
-      ],
+      "tiers": [4],
       "rows": 2,
-      "obstacles": [
-        [
-          "trainTall"
-        ],
-        [
-          "trainLow",
-          "barrierHigh"
-        ]
-      ]
+      "obstacles": [["trainTall"], ["trainLow", "barrierHigh"]]
     }
   ]
 }
