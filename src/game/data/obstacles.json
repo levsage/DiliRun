@@ -1,5 +1,5 @@
 {
-  "$comment": "Obstacle content. Tuning numbers live in balance.json; this file describes WHAT can block you and what beats it, so a new hazard is a data edit. `clearWith` is matched against the hero's action: an empty list means only a lane change survives. `heightMeters` is the height of a ground hazard, and the CLEARANCE left under an overhead one; `bodyMeters` is how thick the drawn body is. Design table: docs/GAME_DESIGN.md \u00a75.",
+  "$comment": "Obstacle content. Tuning numbers live in balance.json; this file describes WHAT can block you and what beats it, so a new hazard is a data edit. `clearWith` is matched against the hero's action: an empty list means only a lane change survives. `signal` is the arrow painted on the hazard (docs/GAME_DESIGN.md §5.1) and must agree with `clearWith` — tests/unit/signals.test.ts enforces that. `heightMeters` is the height of a ground hazard, and the CLEARANCE left under an overhead one; `bodyMeters` is how thick the drawn body is. Coins are no longer part of a pattern: they arrive on their own schedule, see balance.json spawn.coin*.",
   "kinds": [
     {
       "id": "barrierLow",
@@ -8,7 +8,10 @@
       "lengthMeters": 0.9,
       "heightMeters": 0.9,
       "vertical": "ground",
-      "clearWith": ["jump"],
+      "clearWith": [
+        "jump"
+      ],
+      "signal": "jump",
       "front": "navy",
       "top": "suit",
       "tier": 1,
@@ -21,7 +24,11 @@
       "lengthMeters": 1.1,
       "heightMeters": 1.2,
       "vertical": "overhead",
-      "clearWith": ["slide", "roll"],
+      "clearWith": [
+        "slide",
+        "roll"
+      ],
+      "signal": "duck",
       "front": "danger",
       "top": "white",
       "tier": 2,
@@ -35,6 +42,7 @@
       "heightMeters": 1.6,
       "vertical": "ground",
       "clearWith": [],
+      "signal": "none",
       "front": "skyDeep",
       "top": "sky",
       "tier": 1,
@@ -48,6 +56,7 @@
       "heightMeters": 3.2,
       "vertical": "ground",
       "clearWith": [],
+      "signal": "none",
       "front": "navy",
       "top": "suitDeep",
       "tier": 3,
@@ -60,7 +69,10 @@
       "lengthMeters": 1.4,
       "heightMeters": 1.15,
       "vertical": "overhead",
-      "clearWith": ["slide"],
+      "clearWith": [
+        "slide"
+      ],
+      "signal": "duck",
       "front": "goldDeep",
       "top": "gold",
       "tier": 3,
@@ -70,52 +82,97 @@
   "patterns": [
     {
       "id": "single",
-      "tiers": [1],
+      "tiers": [
+        1
+      ],
       "rows": 1,
-      "obstacles": [["barrierLow"]],
-      "coins": "line"
+      "obstacles": [
+        [
+          "barrierLow"
+        ]
+      ]
     },
     {
       "id": "pair",
-      "tiers": [2],
+      "tiers": [
+        2
+      ],
       "rows": 1,
       "obstacles": [
-        ["barrierLow", "trainLow"],
-        ["barrierHigh", "barrierLow"],
-        ["trainLow", "barrierHigh"]
-      ],
-      "coins": "line"
+        [
+          "barrierLow",
+          "trainLow"
+        ],
+        [
+          "barrierHigh",
+          "barrierLow"
+        ],
+        [
+          "trainLow",
+          "barrierHigh"
+        ]
+      ]
     },
     {
       "id": "express",
-      "tiers": [2, 3, 4],
+      "tiers": [
+        2,
+        3,
+        4
+      ],
       "rows": 1,
-      "obstacles": [["trainTall"]],
-      "coins": "arc"
+      "obstacles": [
+        [
+          "trainTall"
+        ]
+      ]
     },
     {
       "id": "gantry",
-      "tiers": [3, 4],
+      "tiers": [
+        3,
+        4
+      ],
       "rows": 1,
-      "obstacles": [["beamRow"]],
-      "coins": "line"
+      "obstacles": [
+        [
+          "beamRow"
+        ]
+      ]
     },
     {
       "id": "bait",
-      "tiers": [3, 4],
+      "tiers": [
+        3,
+        4
+      ],
       "rows": 1,
       "obstacles": [
-        ["barrierLow", "beamRow"],
-        ["trainLow", "barrierHigh"]
-      ],
-      "coins": "zigzag"
+        [
+          "barrierLow",
+          "beamRow"
+        ],
+        [
+          "trainLow",
+          "barrierHigh"
+        ]
+      ]
     },
     {
       "id": "double",
-      "tiers": [4],
+      "tiers": [
+        4
+      ],
       "rows": 2,
-      "obstacles": [["trainTall"], ["trainLow", "barrierHigh"]],
-      "coins": "cluster"
+      "obstacles": [
+        [
+          "trainTall"
+        ],
+        [
+          "trainLow",
+          "barrierHigh"
+        ]
+      ]
     }
   ]
 }
